@@ -251,7 +251,9 @@ export function PurchaseForm({
                   <Input
                     type="number"
                     step="any"
-                    {...register(`lines.${index}.amountPaid`)}
+                    {...register(`lines.${index}.amountPaid`, {
+                      valueAsNumber: true,
+                    })}
                   />
                   {errors.lines?.[index]?.amountPaid && (
                     <p className="text-sm text-destructive">

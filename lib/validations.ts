@@ -28,11 +28,12 @@ export const finishedProductSchema = z.object({
 const purchaseLineSchema = z.object({
   rawMaterialId: z.string().min(1, "Material is required"),
   quantity: z.coerce.number().positive("Quantity must be greater than 0"),
-  amountPaid: z.preprocess((val) => {
-    if (val === "" || val === null || val === undefined) return undefined;
-    const n = Number(val);
-    return Number.isNaN(n) ? undefined : n;
-  }, z.number({ required_error: "Amount paid is required" }).min(0, "Amount cannot be negative")),
+  amountPaid: z.coerce
+    .number({
+      required_error: "Amount paid is required",
+      invalid_type_error: "Amount paid is required",
+    })
+    .min(0, "Amount cannot be negative"),
 });
 
 export const purchaseSchema = z
