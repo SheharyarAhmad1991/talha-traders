@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Umer Traders
 
-## Getting Started
+Admin dashboard for tracking raw material quantities and labor payments.
 
-First, run the development server:
+## Stack
+
+- Next.js (App Router) + Tailwind CSS + Shadcn UI
+- Prisma + Supabase PostgreSQL
+- React Hook Form + Zod
+- Deploy: Vercel Free Tier
+
+## Local setup
+
+1. Copy `.env.example` to `.env` and fill in Supabase + auth values.
+2. Install and setup:
 
 ```bash
+npm install
+npm run db:setup
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Login:
+   - Email: `admin@umertraders.com`
+   - Password: `admin123`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Vercel environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Set these in the Vercel project settings:
 
-## Learn More
+- `DATABASE_URL`
+- `DIRECT_URL`
+- `AUTH_SECRET`
+- `ADMIN_EMAIL`
+- `ADMIN_PASSWORD`
+- `ADMIN_NAME`
 
-To learn more about Next.js, take a look at the following resources:
+After first deploy, run seed once (local against production DB or Vercel CLI):
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run db:seed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Sidebar order
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Dashboard Home
+2. Purchase Material
+3. Issue to Worker
+4. Receive Product
+5. Download Statement
+6. Settings

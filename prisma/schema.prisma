@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+}
+
+model Dealer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Worker {
+  id        String            @id @default(cuid())
+  name      String
+  phone     String?
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  inventory WorkerInventory[]
+}
+
+model RawMaterial {
+  id               String             @id @default(cuid())
+  name             String
+  unit             String
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  factoryInventory FactoryInventory?
+  workerInventory  WorkerInventory[]
+}
+
+model FinishedProduct {
+  id        String   @id @default(cuid())
+  name      String
+  unit      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model FactoryInventory {
+  id            String      @id @default(cuid())
+  rawMaterialId String      @unique
+  quantity      Float       @default(0)
+  updatedAt     DateTime    @updatedAt
+  rawMaterial   RawMaterial @relation(fields: [rawMaterialId], references: [id], onDelete: Cascade)
+}
+
+model WorkerInventory {
+  id            String      @id @default(cuid())
+  workerId      String
+  rawMaterialId String
+  quantity      Float       @default(0)
+  updatedAt     DateTime    @updatedAt
+  worker        Worker      @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  rawMaterial   RawMaterial @relation(fields: [rawMaterialId], references: [id], onDelete: Cascade)
+
+  @@unique([workerId, rawMaterialId])
+}
+
+enum TransactionType {
+  PURCHASE
+  ISSUE
+  RECEIVE
+}
+
+enum SendTo {
+  FACTORY
+  WORKER
+}
+
+model TransactionLog {
+  id                  String          @id @default(cuid())
+  type                TransactionType
+  date                DateTime
+  dealerId            String?
+  dealerName          String?
+  workerId            String?
+  workerName          String?
+  rawMaterialId       String?
+  rawMaterialName     String?
+  finishedProductId   String?
+  finishedProductName String?
+  quantity            Float?
+  materialConsumed    Float?
+  amountPaid          Float?
+  mazdooriPaid        Float?
+  sendTo              SendTo?
+  notes               String?
+  imageData           String?         @db.Text
+  batchId             String?
+  extra               Json?
+  createdAt           DateTime        @default(now())
+
+  @@index([batchId])
+  @@index([type, date])
+}
