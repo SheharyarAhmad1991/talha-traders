@@ -29,6 +29,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type CrudItem = {
   id: string;
@@ -57,6 +58,7 @@ export function CrudSection({
   items: initialItems,
   fields,
 }: Props) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [items, setItems] = useState<CrudItem[]>(initialItems);
   const [open, setOpen] = useState(false);
@@ -74,7 +76,6 @@ export function CrudSection({
     }
   }, [endpoint]);
 
-  // Always load latest rows from the API (avoids stale empty table after save)
   useEffect(() => {
     void reloadItems();
   }, [reloadItems]);
@@ -110,7 +111,7 @@ export function CrudSection({
         (field.key === "name" || field.key === "unit") &&
         !formValues[field.key]?.trim()
       ) {
-        setFormError(`${field.label} is required`);
+        setFormError(`${field.label} ${t("fieldRequired")}`);
         return;
       }
     }
@@ -126,40 +127,39 @@ export function CrudSection({
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Something went wrong");
+        throw new Error(data.error || t("somethingWrong"));
       }
 
-      // Update table immediately, then reload from server for accuracy
       if (editing) {
         setItems((prev) => prev.map((i) => (i.id === editing.id ? data : i)));
-        toast.success("Updated successfully");
+        toast.success(t("updatedSuccess"));
       } else {
         setItems((prev) => [data, ...prev]);
-        toast.success("Created successfully");
+        toast.success(t("createdSuccess"));
       }
 
       setOpen(false);
       await reloadItems();
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Request failed");
+      toast.error(err instanceof Error ? err.message : t("requestFailed"));
     } finally {
       setLoading(false);
     }
   }
 
   async function onDelete(id: string) {
-    if (!confirm("Delete this record?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     try {
       const res = await fetch(`${endpoint}/${id}`, { method: "DELETE" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Delete failed");
+      if (!res.ok) throw new Error(data.error || t("failedToDelete"));
       setItems((prev) => prev.filter((i) => i.id !== id));
-      toast.success("Deleted");
+      toast.success(t("deletedSuccess"));
       await reloadItems();
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Delete failed");
+      toast.error(err instanceof Error ? err.message : t("failedToDelete"));
     }
   }
 
@@ -172,7 +172,7 @@ export function CrudSection({
         </div>
         <Button type="button" onClick={openCreate}>
           <Plus data-icon="inline-start" />
-          Add
+          {t("add")}
         </Button>
       </CardHeader>
       <CardContent>
@@ -183,7 +183,7 @@ export function CrudSection({
                 {fields.map((f) => (
                   <TableHead key={f.key}>{f.label}</TableHead>
                 ))}
-                <TableHead className="w-28 text-right">Actions</TableHead>
+                <TableHead className="w-28 text-right">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -193,7 +193,7 @@ export function CrudSection({
                     colSpan={fields.length + 1}
                     className="py-8 text-center text-muted-foreground"
                   >
-                    No records yet. Click Add to create one.
+                    {t("noRecordsYet")}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -211,7 +211,7 @@ export function CrudSection({
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => openEdit(item)}
-                          aria-label="Edit"
+                          aria-label={t("edit")}
                         >
                           <Pencil />
                         </Button>
@@ -220,7 +220,7 @@ export function CrudSection({
                           variant="ghost"
                           size="icon-sm"
                           onClick={() => onDelete(item.id)}
-                          aria-label="Delete"
+                          aria-label={t("delete")}
                         >
                           <Trash2 />
                         </Button>
@@ -238,7 +238,7 @@ export function CrudSection({
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {editing ? `Edit ${title}` : `Add ${title}`}
+              {editing ? `${t("edit")} ${title}` : `${t("add")} ${title}`}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={onSubmit} className="space-y-4">
@@ -268,10 +268,10 @@ export function CrudSection({
                 variant="outline"
                 onClick={() => setOpen(false)}
               >
-                Cancel
+                {t("cancel")}
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : "Save"}
+                {loading ? t("saving") : t("save")}
               </Button>
             </DialogFooter>
           </form>

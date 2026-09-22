@@ -101,12 +101,14 @@ export function PurchaseForm({
         body: JSON.stringify({ ...values, imageData }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save");
-      toast.success(`Purchase recorded (${data.count || values.lines.length} items)`);
+      if (!res.ok) throw new Error(data.error || t("failedToSave"));
+      toast.success(
+        `${t("purchaseRecorded")} (${data.count || values.lines.length} ${t("itemsCount")})`
+      );
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save");
+      toast.error(err instanceof Error ? err.message : t("failedToSave"));
     } finally {
       setLoading(false);
     }
@@ -116,16 +118,13 @@ export function PurchaseForm({
     <Card>
       <CardHeader>
         <CardTitle>{t("purchaseTitle")}</CardTitle>
-        <CardDescription>
-          Buy multiple materials from one dealer. Send all to factory or directly
-          to a worker.
-        </CardDescription>
+        <CardDescription>{t("purchaseDesc")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">{t("date")}</Label>
               <Input id="date" type="date" {...register("date")} />
               {errors.date && (
                 <p className="text-sm text-destructive">{errors.date.message}</p>
@@ -133,7 +132,7 @@ export function PurchaseForm({
             </div>
 
             <div className="space-y-2">
-              <Label>Dealer Name</Label>
+              <Label>{t("dealerName")}</Label>
               <Controller
                 control={control}
                 name="dealerId"
@@ -142,7 +141,7 @@ export function PurchaseForm({
                     value={field.value}
                     onValueChange={field.onChange}
                     options={dealerOptions}
-                    placeholder="Select dealer"
+                    placeholder={t("selectDealer")}
                   />
                 )}
               />
@@ -154,7 +153,7 @@ export function PurchaseForm({
             </div>
 
             <div className="space-y-2">
-              <Label>Send To</Label>
+              <Label>{t("sendTo")}</Label>
               <Controller
                 control={control}
                 name="sendTo"
@@ -163,7 +162,7 @@ export function PurchaseForm({
                     value={field.value}
                     onValueChange={field.onChange}
                     options={sendToOptions}
-                    placeholder="Select destination"
+                    placeholder={t("selectDestination")}
                   />
                 )}
               />
@@ -171,7 +170,7 @@ export function PurchaseForm({
 
             {sendTo === "WORKER" && (
               <div className="space-y-2">
-                <Label>Worker</Label>
+                <Label>{t("worker")}</Label>
                 <Controller
                   control={control}
                   name="workerId"
@@ -180,7 +179,7 @@ export function PurchaseForm({
                       value={field.value || ""}
                       onValueChange={field.onChange}
                       options={workerOptions}
-                      placeholder="Select worker"
+                      placeholder={t("selectWorker")}
                     />
                   )}
                 />
@@ -199,7 +198,7 @@ export function PurchaseForm({
 
           <div className="space-y-3 rounded-lg border p-3">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-medium">Materials</p>
+              <p className="text-sm font-medium">{t("materials")}</p>
               <Button
                 type="button"
                 variant="outline"
@@ -213,7 +212,7 @@ export function PurchaseForm({
                 }
               >
                 <Plus data-icon="inline-start" />
-                Add Material
+                {t("addMaterial")}
               </Button>
             </div>
 
@@ -223,7 +222,7 @@ export function PurchaseForm({
                 className="grid gap-3 rounded-md border bg-muted/20 p-3 md:grid-cols-[1fr_120px_120px_auto]"
               >
                 <div className="space-y-2">
-                  <Label>Material</Label>
+                  <Label>{t("material")}</Label>
                   <Controller
                     control={control}
                     name={`lines.${index}.rawMaterialId`}
@@ -232,7 +231,7 @@ export function PurchaseForm({
                         value={f.value}
                         onValueChange={f.onChange}
                         options={materialOptions}
-                        placeholder="Select material"
+                        placeholder={t("selectMaterial")}
                       />
                     )}
                   />
@@ -243,7 +242,7 @@ export function PurchaseForm({
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label>Quantity</Label>
+                  <Label>{t("quantity")}</Label>
                   <Input
                     type="number"
                     step="any"
@@ -251,7 +250,7 @@ export function PurchaseForm({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Amount Paid</Label>
+                  <Label>{t("amountPaid")}</Label>
                   <Input
                     type="number"
                     step="any"
@@ -272,7 +271,7 @@ export function PurchaseForm({
                     size="icon"
                     disabled={fields.length === 1}
                     onClick={() => remove(index)}
-                    aria-label="Remove line"
+                    aria-label={t("removeLine")}
                   >
                     <Trash2 />
                   </Button>
@@ -298,7 +297,7 @@ export function PurchaseForm({
           <ImageUpload value={imageFile} onChange={setImageFile} />
 
           <Button type="submit" disabled={loading}>
-            {loading ? "Saving..." : "Save Purchase"}
+            {loading ? t("saving") : t("savePurchase")}
           </Button>
         </form>
       </CardContent>

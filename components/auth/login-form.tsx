@@ -17,10 +17,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type FormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
+  const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const {
@@ -41,12 +43,12 @@ export function LoginForm() {
         body: JSON.stringify(values),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Login failed");
-      toast.success("Welcome back");
+      if (!res.ok) throw new Error(data.error || t("loginFailed"));
+      toast.success(t("welcomeBack"));
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Login failed");
+      toast.error(err instanceof Error ? err.message : t("loginFailed"));
     } finally {
       setLoading(false);
     }
@@ -56,12 +58,12 @@ export function LoginForm() {
     <Card className="w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-2xl">Umer Traders</CardTitle>
-        <CardDescription>Admin login to access the dashboard</CardDescription>
+        <CardDescription>{t("loginDesc")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("email")}</Label>
             <Input
               id="email"
               type="email"
@@ -73,7 +75,7 @@ export function LoginForm() {
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("password")}</Label>
             <Input
               id="password"
               type="password"
@@ -87,7 +89,7 @@ export function LoginForm() {
             )}
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Signing in..." : "Sign in"}
+            {loading ? t("signingIn") : t("signIn")}
           </Button>
         </form>
       </CardContent>

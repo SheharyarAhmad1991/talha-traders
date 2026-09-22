@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type BalanceRow = {
   rawMaterialId?: string;
@@ -11,6 +12,7 @@ type BalanceRow = {
 };
 
 export function WorkerPendingBalance({ workerId }: { workerId?: string }) {
+  const { t } = useLanguage();
   const [balances, setBalances] = useState<BalanceRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,14 +34,14 @@ export function WorkerPendingBalance({ workerId }: { workerId?: string }) {
     })
       .then(async (r) => {
         const data = await r.json();
-        if (!r.ok) throw new Error(data.error || "Failed to load balance");
-        if (!Array.isArray(data)) throw new Error("Invalid balance response");
+        if (!r.ok) throw new Error(data.error || t("failedToLoad"));
+        if (!Array.isArray(data)) throw new Error(t("failedToLoad"));
         if (!cancelled) setBalances(data);
       })
       .catch((err) => {
         if (!cancelled) {
           setBalances([]);
-          setError(err instanceof Error ? err.message : "Failed to load");
+          setError(err instanceof Error ? err.message : t("failedToLoad"));
         }
       })
       .finally(() => {
@@ -49,7 +51,7 @@ export function WorkerPendingBalance({ workerId }: { workerId?: string }) {
     return () => {
       cancelled = true;
     };
-  }, [workerId]);
+  }, [workerId, t]);
 
   if (!workerId) return null;
 
@@ -58,17 +60,17 @@ export function WorkerPendingBalance({ workerId }: { workerId?: string }) {
   return (
     <div className="space-y-2 rounded-lg border border-primary/20 bg-muted/40 p-3">
       <p className="text-sm font-medium">
-        Worker pending material balance
-        {!loading && balances.length > 0 ? ` (total: ${total})` : ""}
+        {t("workerPendingBalance")}
+        {!loading && balances.length > 0 ? ` (${t("total")}: ${total})` : ""}
       </p>
       {loading && (
-        <p className="text-sm text-muted-foreground">Loading balance…</p>
+        <p className="text-sm text-muted-foreground">{t("loadingBalance")}</p>
       )}
       {!loading && error && (
         <p className="text-sm text-destructive">{error}</p>
       )}
       {!loading && !error && balances.length === 0 && (
-        <p className="text-sm text-muted-foreground">No pending balance</p>
+        <p className="text-sm text-muted-foreground">{t("noPendingBalance")}</p>
       )}
       {!loading && !error && balances.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -87,6 +89,7 @@ export function WorkerPendingBalance({ workerId }: { workerId?: string }) {
 }
 
 export function FactoryStockPanel() {
+  const { t } = useLanguage();
   const [stocks, setStocks] = useState<BalanceRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -96,7 +99,7 @@ export function FactoryStockPanel() {
     fetch("/api/inventory", { cache: "no-store", credentials: "same-origin" })
       .then(async (r) => {
         const data = await r.json();
-        if (!r.ok) throw new Error(data.error || "Failed to load factory stock");
+        if (!r.ok) throw new Error(data.error || t("failedToLoad"));
         if (!cancelled && Array.isArray(data)) {
           setStocks(data.filter((s: BalanceRow) => Number(s.quantity) > 0));
         }
@@ -110,16 +113,16 @@ export function FactoryStockPanel() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [t]);
 
   return (
     <div className="space-y-2 rounded-lg border bg-muted/30 p-3">
-      <p className="text-sm font-medium">Factory available stock</p>
+      <p className="text-sm font-medium">{t("factoryAvailableStock")}</p>
       {loading && (
-        <p className="text-sm text-muted-foreground">Loading factory stock…</p>
+        <p className="text-sm text-muted-foreground">{t("loadingFactoryStock")}</p>
       )}
       {!loading && stocks.length === 0 && (
-        <p className="text-sm text-muted-foreground">No factory stock available</p>
+        <p className="text-sm text-muted-foreground">{t("noFactoryStockAvailable")}</p>
       )}
       {!loading && stocks.length > 0 && (
         <div className="flex flex-wrap gap-2">

@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type ImageUploadProps = {
   id?: string;
@@ -22,10 +23,12 @@ type ImageUploadProps = {
 
 export function ImageUpload({
   id = "image",
-  label = "Image Upload",
+  label,
   value,
   onChange,
 }: ImageUploadProps) {
+  const { t } = useLanguage();
+  const displayLabel = label ?? t("imageUpload");
   const galleryRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -48,7 +51,7 @@ export function ImageUpload({
   }
 
   function stopCamera() {
-    streamRef.current?.getTracks().forEach((t) => t.stop());
+    streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
     if (videoRef.current) videoRef.current.srcObject = null;
   }
@@ -61,7 +64,7 @@ export function ImageUpload({
 
   async function startStream() {
     if (!navigator.mediaDevices?.getUserMedia) {
-      toast.error("Camera is not supported in this browser");
+      toast.error(t("failedToSave"));
       setCameraOpen(false);
       return;
     }
@@ -77,7 +80,7 @@ export function ImageUpload({
         await videoRef.current.play();
       }
     } catch {
-      toast.error("Could not open camera. Please allow camera permission.");
+      toast.error(t("failedToSave"));
       closeCamera();
     } finally {
       setStartingCamera(false);
@@ -106,7 +109,7 @@ export function ImageUpload({
   function capturePhoto() {
     const video = videoRef.current;
     if (!video || !video.videoWidth) {
-      toast.error("Camera is not ready yet");
+      toast.error(t("failedToSave"));
       return;
     }
     const canvas = document.createElement("canvas");
@@ -118,7 +121,7 @@ export function ImageUpload({
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          toast.error("Failed to capture photo");
+          toast.error(t("failedToSave"));
           return;
         }
         const file = new File([blob], `camera-${Date.now()}.jpg`, {
@@ -126,7 +129,7 @@ export function ImageUpload({
         });
         applyFile(file);
         closeCamera();
-        toast.success("Photo captured");
+        toast.success(t("capture"));
       },
       "image/jpeg",
       0.92
@@ -135,7 +138,7 @@ export function ImageUpload({
 
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      <Label>{displayLabel}</Label>
 
       <input
         ref={galleryRef}
@@ -153,16 +156,16 @@ export function ImageUpload({
           onClick={() => galleryRef.current?.click()}
         >
           <ImageIcon data-icon="inline-start" />
-          Gallery
+          {t("gallery")}
         </Button>
         <Button type="button" variant="outline" onClick={() => setCameraOpen(true)}>
           <Camera data-icon="inline-start" />
-          Camera
+          {t("camera")}
         </Button>
         {value && (
           <Button type="button" variant="ghost" onClick={() => applyFile(null)}>
             <X data-icon="inline-start" />
-            Remove
+            {t("remove")}
           </Button>
         )}
       </div>
@@ -189,12 +192,12 @@ export function ImageUpload({
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Take Photo</DialogTitle>
+            <DialogTitle>{t("takePhoto")}</DialogTitle>
           </DialogHeader>
           <div className="overflow-hidden rounded-lg border bg-black">
             {startingCamera && (
               <p className="p-4 text-center text-sm text-white">
-                Starting camera…
+                {t("startingCamera")}
               </p>
             )}
             <video
@@ -207,7 +210,7 @@ export function ImageUpload({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={closeCamera}>
-              Cancel
+              {t("cancel")}
             </Button>
             <Button
               type="button"
@@ -215,7 +218,7 @@ export function ImageUpload({
               disabled={startingCamera}
             >
               <Camera data-icon="inline-start" />
-              Capture
+              {t("capture")}
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type Option = { id: string; name: string; unit?: string };
 
@@ -38,11 +39,6 @@ type LogRecord = {
   } | null;
 };
 
-const sendToOptions = [
-  { value: "FACTORY", label: "Factory" },
-  { value: "WORKER", label: "Worker" },
-];
-
 export function EditTransactionForm({
   log,
   dealers,
@@ -56,6 +52,7 @@ export function EditTransactionForm({
   materials: Option[];
   products: Option[];
 }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState(log.date.slice(0, 10));
@@ -82,6 +79,14 @@ export function EditTransactionForm({
   );
 
   const isPrimaryReceive = (log.materialConsumed ?? 0) > 0;
+
+  const sendToOptions = useMemo(
+    () => [
+      { value: "FACTORY", label: t("factory") },
+      { value: "WORKER", label: t("worker") },
+    ],
+    [t]
+  );
 
   const dealerOptions = useMemo(
     () => dealers.map((d) => ({ value: d.id, label: d.name })),
@@ -150,12 +155,12 @@ export function EditTransactionForm({
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Update failed");
-      toast.success("Record updated");
+      if (!res.ok) throw new Error(data.error || t("updateFailed"));
+      toast.success(t("recordUpdated"));
       router.push("/dashboard/statement");
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Update failed");
+      toast.error(err instanceof Error ? err.message : t("updateFailed"));
     } finally {
       setLoading(false);
     }
@@ -164,9 +169,11 @@ export function EditTransactionForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Edit {log.type} Record</CardTitle>
+        <CardTitle>
+          {t("editRecord")} ({log.type})
+        </CardTitle>
         <CardDescription>
-          Changing this will update inventory balances automatically.
+          {t("inventoryUpdateHint")}
           {log.type === "RECEIVE" && isPrimaryReceive
             ? " Deleting later will remove the whole receive batch."
             : ""}
@@ -176,7 +183,7 @@ export function EditTransactionForm({
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label>Date</Label>
+              <Label>{t("date")}</Label>
               <Input
                 type="date"
                 value={date}
@@ -191,22 +198,22 @@ export function EditTransactionForm({
               <div className="space-y-2">
                 {log.type === "PURCHASE" ? (
                   <>
-                    <Label>Dealer</Label>
+                    <Label>{t("dealer")}</Label>
                     <AppSelect
                       value={dealerId}
                       onValueChange={setDealerId}
                       options={dealerOptions}
-                      placeholder="Select dealer"
+                      placeholder={t("selectDealer")}
                     />
                   </>
                 ) : (
                   <>
-                    <Label>Worker</Label>
+                    <Label>{t("worker")}</Label>
                     <AppSelect
                       value={workerId}
                       onValueChange={setWorkerId}
                       options={workerOptions}
-                      placeholder="Select worker"
+                      placeholder={t("selectWorker")}
                     />
                   </>
                 )}
@@ -216,7 +223,7 @@ export function EditTransactionForm({
             {log.type === "PURCHASE" && (
               <>
                 <div className="space-y-2">
-                  <Label>Send To</Label>
+                  <Label>{t("sendTo")}</Label>
                   <AppSelect
                     value={sendTo}
                     onValueChange={(v) =>
@@ -227,12 +234,12 @@ export function EditTransactionForm({
                 </div>
                 {sendTo === "WORKER" && (
                   <div className="space-y-2">
-                    <Label>Worker</Label>
+                    <Label>{t("worker")}</Label>
                     <AppSelect
                       value={workerId}
                       onValueChange={setWorkerId}
                       options={workerOptions}
-                      placeholder="Select worker"
+                      placeholder={t("selectWorker")}
                     />
                   </div>
                 )}
@@ -241,30 +248,30 @@ export function EditTransactionForm({
 
             {(log.type === "PURCHASE" || log.type === "ISSUE") && (
               <div className="space-y-2">
-                <Label>Material</Label>
+                <Label>{t("material")}</Label>
                 <AppSelect
                   value={rawMaterialId}
                   onValueChange={setRawMaterialId}
                   options={materialOptions}
-                  placeholder="Select material"
+                  placeholder={t("selectMaterial")}
                 />
               </div>
             )}
 
             {log.type === "RECEIVE" && (
               <div className="space-y-2">
-                <Label>Finished Product</Label>
+                <Label>{t("finishedProduct")}</Label>
                 <AppSelect
                   value={finishedProductId}
                   onValueChange={setFinishedProductId}
                   options={productOptions}
-                  placeholder="Select product"
+                  placeholder={t("selectProduct")}
                 />
               </div>
             )}
 
             <div className="space-y-2">
-              <Label>Quantity</Label>
+              <Label>{t("quantity")}</Label>
               <Input
                 type="number"
                 step="any"
@@ -276,7 +283,7 @@ export function EditTransactionForm({
 
             {log.type === "PURCHASE" && (
               <div className="space-y-2">
-                <Label>Amount Paid</Label>
+                <Label>{t("amountPaid")}</Label>
                 <Input
                   type="number"
                   step="any"
@@ -289,7 +296,7 @@ export function EditTransactionForm({
 
             {log.type === "RECEIVE" && isPrimaryReceive && (
               <div className="space-y-2">
-                <Label>Mazdoori Paid</Label>
+                <Label>{t("mazdooriPaid")}</Label>
                 <Input
                   type="number"
                   step="any"
@@ -303,7 +310,7 @@ export function EditTransactionForm({
           {log.type === "RECEIVE" && isPrimaryReceive && (
             <div className="space-y-3 rounded-lg border p-3">
               <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Materials Consumed</p>
+                <p className="text-sm font-medium">{t("materialsConsumed")}</p>
                 <Button
                   type="button"
                   size="sm"
@@ -316,7 +323,7 @@ export function EditTransactionForm({
                   }
                 >
                   <Plus data-icon="inline-start" />
-                  Add
+                  {t("add")}
                 </Button>
               </div>
               {materialsConsumed.map((row, index) => (
@@ -334,7 +341,7 @@ export function EditTransactionForm({
                       )
                     }
                     options={materialOptions}
-                    placeholder="Material"
+                    placeholder={t("material")}
                   />
                   <Input
                     type="number"
@@ -372,14 +379,14 @@ export function EditTransactionForm({
 
           <div className="flex gap-2">
             <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Save Changes"}
+              {loading ? t("saving") : t("saveChanges")}
             </Button>
             <Button
               type="button"
               variant="outline"
               onClick={() => router.push("/dashboard/statement")}
             >
-              Cancel
+              {t("cancel")}
             </Button>
           </div>
         </form>

@@ -105,14 +105,14 @@ export function ReceiveForm({
         body: JSON.stringify({ ...values, imageData }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save");
+      if (!res.ok) throw new Error(data.error || t("failedToSave"));
       toast.success(
-        `Products received (${data.count || values.products.length} items)`
+        `${t("productsReceived")} (${data.count || values.products.length} ${t("itemsCount")})`
       );
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save");
+      toast.error(err instanceof Error ? err.message : t("failedToSave"));
     } finally {
       setLoading(false);
     }
@@ -122,16 +122,13 @@ export function ReceiveForm({
     <Card>
       <CardHeader>
         <CardTitle>{t("receiveTitle")}</CardTitle>
-        <CardDescription>
-          Receive multiple finished products and deduct multiple raw materials
-          from the worker.
-        </CardDescription>
+        <CardDescription>{t("receiveDesc")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">{t("date")}</Label>
               <Input id="date" type="date" {...register("date")} />
               {errors.date && (
                 <p className="text-sm text-destructive">{errors.date.message}</p>
@@ -139,7 +136,7 @@ export function ReceiveForm({
             </div>
 
             <div className="space-y-2">
-              <Label>Worker Name</Label>
+              <Label>{t("workerName")}</Label>
               <Controller
                 control={control}
                 name="workerId"
@@ -148,7 +145,7 @@ export function ReceiveForm({
                     value={field.value}
                     onValueChange={field.onChange}
                     options={workerOptions}
-                    placeholder="Select worker"
+                    placeholder={t("selectWorker")}
                   />
                 )}
               />
@@ -160,7 +157,7 @@ export function ReceiveForm({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="mazdooriPaid">Mazdoori Paid</Label>
+              <Label htmlFor="mazdooriPaid">{t("mazdooriPaid")}</Label>
               <Input
                 id="mazdooriPaid"
                 type="number"
@@ -179,7 +176,7 @@ export function ReceiveForm({
 
           <div className="space-y-3 rounded-lg border p-3">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-medium">Finished Products Received</p>
+              <p className="text-sm font-medium">{t("finishedProductsReceived")}</p>
               <Button
                 type="button"
                 variant="outline"
@@ -192,7 +189,7 @@ export function ReceiveForm({
                 }
               >
                 <Plus data-icon="inline-start" />
-                Add Product
+                {t("addProduct")}
               </Button>
             </div>
             {productFields.fields.map((field, index) => (
@@ -201,7 +198,7 @@ export function ReceiveForm({
                 className="grid gap-3 rounded-md border bg-muted/20 p-3 md:grid-cols-[1fr_140px_auto]"
               >
                 <div className="space-y-2">
-                  <Label>Product</Label>
+                  <Label>{t("product")}</Label>
                   <Controller
                     control={control}
                     name={`products.${index}.finishedProductId`}
@@ -210,13 +207,13 @@ export function ReceiveForm({
                         value={f.value}
                         onValueChange={f.onChange}
                         options={productOptions}
-                        placeholder="Select product"
+                        placeholder={t("selectProduct")}
                       />
                     )}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Quantity</Label>
+                  <Label>{t("quantity")}</Label>
                   <Input
                     type="number"
                     step="any"
@@ -230,6 +227,7 @@ export function ReceiveForm({
                     size="icon"
                     disabled={productFields.fields.length === 1}
                     onClick={() => productFields.remove(index)}
+                    aria-label={t("removeLine")}
                   >
                     <Trash2 />
                   </Button>
@@ -240,7 +238,7 @@ export function ReceiveForm({
 
           <div className="space-y-3 rounded-lg border p-3">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-medium">Raw Materials Consumed</p>
+              <p className="text-sm font-medium">{t("rawMaterialsConsumed")}</p>
               <Button
                 type="button"
                 variant="outline"
@@ -253,7 +251,7 @@ export function ReceiveForm({
                 }
               >
                 <Plus data-icon="inline-start" />
-                Add Material
+                {t("addMaterial")}
               </Button>
             </div>
             {materialFields.fields.map((field, index) => (
@@ -262,7 +260,7 @@ export function ReceiveForm({
                 className="grid gap-3 rounded-md border bg-muted/20 p-3 md:grid-cols-[1fr_140px_auto]"
               >
                 <div className="space-y-2">
-                  <Label>Material to Deduct</Label>
+                  <Label>{t("materialToDeduct")}</Label>
                   <Controller
                     control={control}
                     name={`materialsConsumed.${index}.rawMaterialId`}
@@ -271,13 +269,13 @@ export function ReceiveForm({
                         value={f.value}
                         onValueChange={f.onChange}
                         options={materialOptions}
-                        placeholder="Select material"
+                        placeholder={t("selectMaterial")}
                       />
                     )}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Quantity</Label>
+                  <Label>{t("quantity")}</Label>
                   <Input
                     type="number"
                     step="any"
@@ -291,6 +289,7 @@ export function ReceiveForm({
                     size="icon"
                     disabled={materialFields.fields.length === 1}
                     onClick={() => materialFields.remove(index)}
+                    aria-label={t("removeLine")}
                   >
                     <Trash2 />
                   </Button>

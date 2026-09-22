@@ -58,7 +58,7 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
         { cache: "no-store" }
       );
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load");
+      if (!res.ok) throw new Error(data.error || t("failedToLoad"));
       setRows(
         (data.rows || []).map((r: AttendanceRow) => ({
           employeeId: r.employeeId,
@@ -68,12 +68,12 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
         }))
       );
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to load");
+      toast.error(err instanceof Error ? err.message : t("failedToLoad"));
       setRows([]);
     } finally {
       setLoading(false);
     }
-  }, [date, factoryId]);
+  }, [date, factoryId, t]);
 
   useEffect(() => {
     void loadRows();
@@ -90,11 +90,11 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
 
   async function onSave() {
     if (!factoryId || !date) {
-      toast.error("Select date and factory");
+      toast.error(t("selectDateFactory"));
       return;
     }
     if (rows.length === 0) {
-      toast.error("No employees to save");
+      toast.error(t("noEmployeesToSave"));
       return;
     }
     setSaving(true);
@@ -113,11 +113,11 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save");
-      toast.success("Attendance saved");
+      if (!res.ok) throw new Error(data.error || t("failedToSave"));
+      toast.success(t("attendanceSaved"));
       await loadRows();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save");
+      toast.error(err instanceof Error ? err.message : t("failedToSave"));
     } finally {
       setSaving(false);
     }

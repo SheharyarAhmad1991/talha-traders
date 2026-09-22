@@ -88,12 +88,14 @@ export function IssueForm({
         body: JSON.stringify({ ...values, imageData }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to save");
-      toast.success(`Material issued (${data.count || values.lines.length} items)`);
+      if (!res.ok) throw new Error(data.error || t("failedToSave"));
+      toast.success(
+        `${t("materialIssued")} (${data.count || values.lines.length} ${t("itemsCount")})`
+      );
       router.push("/dashboard");
       router.refresh();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to save");
+      toast.error(err instanceof Error ? err.message : t("failedToSave"));
     } finally {
       setLoading(false);
     }
@@ -103,15 +105,13 @@ export function IssueForm({
     <Card>
       <CardHeader>
         <CardTitle>{t("issueTitle")}</CardTitle>
-        <CardDescription>
-          Issue multiple materials from factory stock to one worker.
-        </CardDescription>
+        <CardDescription>{t("issueDesc")}</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">{t("date")}</Label>
               <Input id="date" type="date" {...register("date")} />
               {errors.date && (
                 <p className="text-sm text-destructive">{errors.date.message}</p>
@@ -119,7 +119,7 @@ export function IssueForm({
             </div>
 
             <div className="space-y-2">
-              <Label>Worker Name</Label>
+              <Label>{t("workerName")}</Label>
               <Controller
                 control={control}
                 name="workerId"
@@ -128,7 +128,7 @@ export function IssueForm({
                     value={field.value || ""}
                     onValueChange={field.onChange}
                     options={workerOptions}
-                    placeholder="Select worker"
+                    placeholder={t("selectWorker")}
                   />
                 )}
               />
@@ -146,7 +146,7 @@ export function IssueForm({
 
           <div className="space-y-3 rounded-lg border p-3">
             <div className="flex items-center justify-between gap-2">
-              <p className="text-sm font-medium">Materials to Issue</p>
+              <p className="text-sm font-medium">{t("materialsToIssue")}</p>
               <Button
                 type="button"
                 variant="outline"
@@ -159,7 +159,7 @@ export function IssueForm({
                 }
               >
                 <Plus data-icon="inline-start" />
-                Add Material
+                {t("addMaterial")}
               </Button>
             </div>
 
@@ -169,7 +169,7 @@ export function IssueForm({
                 className="grid gap-3 rounded-md border bg-muted/20 p-3 md:grid-cols-[1fr_140px_auto]"
               >
                 <div className="space-y-2">
-                  <Label>Material</Label>
+                  <Label>{t("material")}</Label>
                   <Controller
                     control={control}
                     name={`lines.${index}.rawMaterialId`}
@@ -178,13 +178,13 @@ export function IssueForm({
                         value={f.value}
                         onValueChange={f.onChange}
                         options={materialOptions}
-                        placeholder="Select material"
+                        placeholder={t("selectMaterial")}
                       />
                     )}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Quantity</Label>
+                  <Label>{t("quantity")}</Label>
                   <Input
                     type="number"
                     step="any"
@@ -198,7 +198,7 @@ export function IssueForm({
                     size="icon"
                     disabled={fields.length === 1}
                     onClick={() => remove(index)}
-                    aria-label="Remove line"
+                    aria-label={t("removeLine")}
                   >
                     <Trash2 />
                   </Button>
@@ -218,7 +218,7 @@ export function IssueForm({
           <ImageUpload value={imageFile} onChange={setImageFile} />
 
           <Button type="submit" disabled={loading}>
-            {loading ? "Saving..." : "Issue Material"}
+            {loading ? t("saving") : t("issueMaterial")}
           </Button>
         </form>
       </CardContent>

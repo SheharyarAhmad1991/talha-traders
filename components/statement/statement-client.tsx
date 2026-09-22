@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { toast } from "sonner";
@@ -26,13 +26,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/lib/i18n/language-context";
-
-const recordTypeOptions = [
-  { value: "ALL", label: "All" },
-  { value: "PURCHASE", label: "Purchase" },
-  { value: "ISSUE", label: "Issue" },
-  { value: "RECEIVE", label: "Receive" },
-];
 
 type LogRow = {
   id: string;
@@ -60,6 +53,16 @@ export function StatementClient() {
   const [loading, setLoading] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
+  const recordTypeOptions = useMemo(
+    () => [
+      { value: "ALL", label: t("all") },
+      { value: "PURCHASE", label: t("purchase") },
+      { value: "ISSUE", label: t("issue") },
+      { value: "RECEIVE", label: t("receive") },
+    ],
+    [t]
+  );
+
   async function load() {
     setLoading(true);
     try {
@@ -69,10 +72,10 @@ export function StatementClient() {
       params.set("type", type);
       const res = await fetch(`/api/statement?${params.toString()}`);
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load");
+      if (!res.ok) throw new Error(data.error || t("failedToLoad"));
       setRows(data);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to load");
+      toast.error(err instanceof Error ? err.message : t("failedToLoad"));
     } finally {
       setLoading(false);
     }
@@ -84,11 +87,7 @@ export function StatementClient() {
   }, []);
 
   async function onDelete(row: LogRow) {
-    const batchNote =
-      row.type === "RECEIVE" && row.batchId
-        ? " This will delete the whole receive batch and restore deducted materials."
-        : " Inventory will be reversed.";
-    if (!confirm(`Delete this ${row.type} record?${batchNote}`)) return;
+    if (!confirm(t("deleteConfirm"))) return;
 
     setDeletingId(row.id);
     try {
@@ -96,11 +95,11 @@ export function StatementClient() {
         method: "DELETE",
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Delete failed");
-      toast.success("Record deleted");
+      if (!res.ok) throw new Error(data.error || t("failedToDelete"));
+      toast.success(t("recordDeleted"));
       await load();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Delete failed");
+      toast.error(err instanceof Error ? err.message : t("failedToDelete"));
     } finally {
       setDeletingId(null);
     }
@@ -111,7 +110,7 @@ export function StatementClient() {
       return [
         r.dealerName,
         r.rawMaterialName,
-        r.sendTo ? `To ${r.sendTo}` : null,
+        r.sendTo ? `${t("sendTo")} ${r.sendTo}` : null,
         r.workerName ? `(${r.workerName})` : null,
       ]
         .filter(Boolean)
@@ -124,7 +123,7 @@ export function StatementClient() {
       r.workerName,
       r.finishedProductName,
       r.materialConsumed != null && r.materialConsumed > 0
-        ? `Consumed ${r.materialConsumed}`
+        ? `${t("consumed")} ${r.materialConsumed}`
         : null,
     ]
       .filter(Boolean)
@@ -139,22 +138,22 @@ export function StatementClient() {
 
   function downloadCsv() {
     if (rows.length === 0) {
-      toast.message("No rows to download. Apply filters first.");
+      toast.message(t("loadFiltersFirst"));
       return;
     }
     const headers = [
-      "Date",
-      "Type",
-      "Dealer",
-      "Worker",
-      "Material",
-      "Product",
-      "Quantity",
-      "Material Consumed",
-      "Amount Paid",
-      "Mazdoori Paid",
-      "Send To",
-      "Notes",
+      t("date"),
+      t("type"),
+      t("dealer"),
+      t("worker"),
+      t("material"),
+      t("product"),
+      t("quantity"),
+      t("materialsConsumed"),
+      t("amountPaid"),
+      t("mazdooriPaid"),
+      t("sendTo"),
+      t("notes"),
     ];
     const lines = rows.map((r) =>
       [
@@ -181,12 +180,12 @@ export function StatementClient() {
     a.download = `umer-traders-statement-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("CSV downloaded");
+    toast.success(t("csvDownloaded"));
   }
 
   async function downloadPdf() {
     if (rows.length === 0) {
-      toast.message("No rows to download. Apply filters first.");
+      toast.message(t("loadFiltersFirst"));
       return;
     }
 
@@ -204,10 +203,10 @@ export function StatementClient() {
       doc.setFontSize(10);
       doc.text(
         [
-          startDate ? `From: ${startDate}` : null,
-          endDate ? `To: ${endDate}` : null,
-          `Type: ${type}`,
-          `Generated: ${format(new Date(), "dd MMM yyyy HH:mm")}`,
+          startDate ? `${t("from")}: ${startDate}` : null,
+          endDate ? `${t("to")}: ${endDate}` : null,
+          `${t("type")}: ${type}`,
+          `${t("generated")}: ${format(new Date(), "dd MMM yyyy HH:mm")}`,
         ]
           .filter(Boolean)
           .join("  |  "),
@@ -217,7 +216,16 @@ export function StatementClient() {
 
       autoTable(doc, {
         startY: 30,
-        head: [["Date", "Type", "Details", "Qty", "Payment", "Notes"]],
+        head: [
+          [
+            t("date"),
+            t("type"),
+            t("details"),
+            t("qty"),
+            t("payment"),
+            t("notes"),
+          ],
+        ],
         body: rows.map((r) => [
           format(new Date(r.date), "dd MMM yyyy"),
           r.type,
@@ -235,10 +243,10 @@ export function StatementClient() {
       });
 
       doc.save(`umer-traders-statement-${Date.now()}.pdf`);
-      toast.success("PDF downloaded");
+      toast.success(t("pdfDownloaded"));
     } catch (err) {
       console.error(err);
-      toast.error("Failed to create PDF");
+      toast.error(t("failedToSave"));
     }
   }
 
@@ -247,14 +255,11 @@ export function StatementClient() {
       <Card>
         <CardHeader>
           <CardTitle>{t("downloadStatement")}</CardTitle>
-          <CardDescription>
-            View, edit, or delete purchase / issue / receive records. Filters
-            and PDF/CSV export included.
-          </CardDescription>
+          <CardDescription>{t("statementDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-4">
           <div className="space-y-2">
-            <Label htmlFor="startDate">Start Date</Label>
+            <Label htmlFor="startDate">{t("startDate")}</Label>
             <Input
               id="startDate"
               type="date"
@@ -263,7 +268,7 @@ export function StatementClient() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="endDate">End Date</Label>
+            <Label htmlFor="endDate">{t("endDate")}</Label>
             <Input
               id="endDate"
               type="date"
@@ -272,27 +277,27 @@ export function StatementClient() {
             />
           </div>
           <div className="space-y-2">
-            <Label>Record Type</Label>
+            <Label>{t("recordType")}</Label>
             <AppSelect
               value={type}
               onValueChange={setType}
               options={recordTypeOptions}
-              placeholder="Record type"
+              placeholder={t("recordType")}
             />
           </div>
           <div className="flex items-end gap-2">
             <Button onClick={load} disabled={loading} className="w-full">
-              {loading ? "Loading..." : "Apply Filters"}
+              {loading ? t("loading") : t("applyFilters")}
             </Button>
           </div>
           <div className="flex flex-wrap gap-2 md:col-span-4">
             <Button variant="outline" onClick={downloadCsv}>
               <Download data-icon="inline-start" />
-              Download CSV
+              {t("downloadCsv")}
             </Button>
             <Button variant="outline" onClick={downloadPdf}>
               <Download data-icon="inline-start" />
-              Download PDF
+              {t("downloadPdf")}
             </Button>
           </div>
         </CardContent>
@@ -300,9 +305,9 @@ export function StatementClient() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Records</CardTitle>
+          <CardTitle>{t("records")}</CardTitle>
           <CardDescription>
-            {rows.length} record(s) — use Edit or Delete on any row
+            {rows.length} {t("recordsCount")} — {t("useEditOrDelete")}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -310,13 +315,13 @@ export function StatementClient() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Details</TableHead>
-                  <TableHead>Qty</TableHead>
-                  <TableHead>Payment</TableHead>
-                  <TableHead>Notes</TableHead>
-                  <TableHead className="w-28 text-right">Actions</TableHead>
+                  <TableHead>{t("date")}</TableHead>
+                  <TableHead>{t("type")}</TableHead>
+                  <TableHead>{t("details")}</TableHead>
+                  <TableHead>{t("qty")}</TableHead>
+                  <TableHead>{t("payment")}</TableHead>
+                  <TableHead>{t("notes")}</TableHead>
+                  <TableHead className="w-28 text-right">{t("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -326,7 +331,7 @@ export function StatementClient() {
                       colSpan={7}
                       className="py-8 text-center text-muted-foreground"
                     >
-                      No records yet.
+                      {t("noRecords")}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -352,7 +357,7 @@ export function StatementClient() {
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              aria-label="Edit"
+                              aria-label={t("edit")}
                             >
                               <Pencil />
                             </Button>
@@ -362,7 +367,7 @@ export function StatementClient() {
                             size="icon-sm"
                             disabled={deletingId === r.id}
                             onClick={() => onDelete(r)}
-                            aria-label="Delete"
+                            aria-label={t("delete")}
                           >
                             <Trash2 />
                           </Button>

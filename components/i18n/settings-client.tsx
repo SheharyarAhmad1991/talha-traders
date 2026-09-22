@@ -53,12 +53,12 @@ export function SettingsClient({
         <TabsContent value="dealers" className="mt-4">
           <CrudSection
             title={t("dealers")}
-            description="Add and manage dealer names and phone numbers."
+            description={t("dealersDesc")}
             endpoint="/api/dealers"
             items={dealers}
             fields={[
               { key: "name", label: t("name"), type: "text" },
-              { key: "phone", label: "Phone", type: "text" },
+              { key: "phone", label: t("phone"), type: "text" },
             ]}
           />
         </TabsContent>
@@ -66,12 +66,12 @@ export function SettingsClient({
         <TabsContent value="workers" className="mt-4">
           <CrudSection
             title={t("workersLabor")}
-            description="Add and manage workers used in issue and receive forms."
+            description={t("workersDesc")}
             endpoint="/api/workers"
             items={workers}
             fields={[
               { key: "name", label: t("name"), type: "text" },
-              { key: "phone", label: "Phone", type: "text" },
+              { key: "phone", label: t("phone"), type: "text" },
             ]}
           />
         </TabsContent>
@@ -79,12 +79,12 @@ export function SettingsClient({
         <TabsContent value="materials" className="mt-4">
           <CrudSection
             title={t("rawMaterials")}
-            description="Materials with units (e.g. kg, rolls)."
+            description={t("materialsDesc")}
             endpoint="/api/materials"
             items={materials}
             fields={[
               { key: "name", label: t("name"), type: "text" },
-              { key: "unit", label: "Unit", type: "text" },
+              { key: "unit", label: t("unit"), type: "text" },
             ]}
           />
         </TabsContent>
@@ -92,12 +92,12 @@ export function SettingsClient({
         <TabsContent value="products" className="mt-4">
           <CrudSection
             title={t("finishedProducts")}
-            description="Finished goods with units (e.g. cartons, pieces)."
+            description={t("productsDesc")}
             endpoint="/api/products"
             items={products}
             fields={[
               { key: "name", label: t("name"), type: "text" },
-              { key: "unit", label: "Unit", type: "text" },
+              { key: "unit", label: t("unit"), type: "text" },
             ]}
           />
         </TabsContent>
@@ -105,7 +105,7 @@ export function SettingsClient({
         <TabsContent value="hr-factories" className="mt-4">
           <CrudSection
             title={t("addFactories")}
-            description="Factories used only for HR employees and attendance."
+            description={t("factoriesDesc")}
             endpoint="/api/hr/factories"
             items={hrFactories}
             fields={[{ key: "name", label: t("name"), type: "text" }]}

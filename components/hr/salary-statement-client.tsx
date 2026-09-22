@@ -58,7 +58,7 @@ export function SalaryStatementClient({
 
   async function onLoad() {
     if (!startDate || !endDate || !factoryId) {
-      toast.error("Select start date, end date, and factory");
+      toast.error(t("selectSalaryFilters"));
       return;
     }
     setLoading(true);
@@ -72,10 +72,10 @@ export function SalaryStatementClient({
         cache: "no-store",
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load");
+      if (!res.ok) throw new Error(data.error || t("failedToLoad"));
       setRows(data.rows || []);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to load");
+      toast.error(err instanceof Error ? err.message : t("failedToLoad"));
       setRows([]);
     } finally {
       setLoading(false);
@@ -84,7 +84,7 @@ export function SalaryStatementClient({
 
   function downloadCsv() {
     if (rows.length === 0) {
-      toast.error("Load statement first");
+      toast.error(t("loadStatementFirst"));
       return;
     }
     const header = [
@@ -117,7 +117,7 @@ export function SalaryStatementClient({
 
   function downloadPdf() {
     if (rows.length === 0) {
-      toast.error("Load statement first");
+      toast.error(t("loadStatementFirst"));
       return;
     }
     const doc = new jsPDF();
@@ -125,7 +125,11 @@ export function SalaryStatementClient({
     doc.text(t("hrSalaryStatement"), 14, 16);
     doc.setFontSize(10);
     doc.text(`${t("factory")}: ${factoryName}`, 14, 24);
-    doc.text(`Period: ${startDate} to ${endDate}`, 14, 30);
+    doc.text(
+      `${t("period")}: ${startDate} ${t("to")} ${endDate}`,
+      14,
+      30
+    );
     autoTable(doc, {
       startY: 36,
       head: [

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type SpeechRecognitionResultLike = {
   readonly isFinal: boolean;
@@ -52,11 +53,13 @@ type NotesWithVoiceProps = {
 
 export function NotesWithVoice({
   id = "notes",
-  label = "Notes",
+  label,
   value,
   onChange,
   rows = 3,
 }: NotesWithVoiceProps) {
+  const { t } = useLanguage();
+  const displayLabel = label ?? t("notes");
   const [listening, setListening] = useState(false);
   const [supported, setSupported] = useState(true);
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
@@ -86,7 +89,7 @@ export function NotesWithVoice({
   function startListening() {
     const SpeechRecognition = getSpeechRecognition();
     if (!SpeechRecognition) {
-      toast.error("Voice typing is not supported in this browser. Use Chrome or Edge.");
+      toast.error(t("voiceNeedChrome"));
       return;
     }
 
@@ -119,9 +122,9 @@ export function NotesWithVoice({
 
       recognition.onerror = (event) => {
         if (event.error === "not-allowed") {
-          toast.error("Microphone permission denied");
+          toast.error(t("failedToSave"));
         } else if (event.error !== "aborted" && event.error !== "no-speech") {
-          toast.error("Voice typing failed. Please try again.");
+          toast.error(t("failedToSave"));
         }
         setListening(false);
       };
@@ -133,9 +136,9 @@ export function NotesWithVoice({
       recognitionRef.current = recognition;
       recognition.start();
       setListening(true);
-      toast.message("اردو سن رہا ہے… بولیں");
+      toast.message(t("listeningHint"));
     } catch {
-      toast.error("Could not start voice typing");
+      toast.error(t("failedToSave"));
       setListening(false);
     }
   }
@@ -151,7 +154,7 @@ export function NotesWithVoice({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-2">
-        <Label htmlFor={id}>{label}</Label>
+        <Label htmlFor={id}>{displayLabel}</Label>
         <Button
           type="button"
           size="sm"
@@ -162,20 +165,20 @@ export function NotesWithVoice({
           title={
             supported
               ? listening
-                ? "Stop listening"
-                : "Start Urdu voice typing"
-              : "Voice not supported in this browser"
+                ? t("stop")
+                : t("voiceUrdu")
+              : t("voiceNeedChrome")
           }
         >
           {listening ? (
             <>
               <MicOff data-icon="inline-start" />
-              Stop
+              {t("stop")}
             </>
           ) : (
             <>
               <Mic data-icon="inline-start" />
-              Voice (اردو)
+              {t("voiceUrdu")}
             </>
           )}
         </Button>
@@ -187,19 +190,17 @@ export function NotesWithVoice({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={
-          listening ? "سن رہا ہے… بولیں (Urdu)" : "Notes / نوٹس لکھیں یا Voice دبائیں"
+          listening ? t("listeningPlaceholder") : t("notesPlaceholder")
         }
         dir="auto"
         className={listening ? "ring-2 ring-destructive/40" : undefined}
       />
 
       {listening && (
-        <p className="text-xs text-destructive">Listening in Urdu… click Stop when done</p>
+        <p className="text-xs text-destructive">{t("listeningHint")}</p>
       )}
       {!supported && (
-        <p className="text-xs text-muted-foreground">
-          Voice typing needs Chrome or Edge with microphone access.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("voiceNeedChrome")}</p>
       )}
     </div>
   );
