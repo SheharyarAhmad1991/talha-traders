@@ -2,6 +2,7 @@
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { LanguageToggle } from "@/components/layout/language-toggle";
 import { MobileNav } from "@/components/layout/sidebar";
 
 export function Header({ userName }: { userName: string }) {
@@ -22,6 +23,7 @@ export function Header({ userName }: { userName: string }) {
       </div>
 
       <div className="flex items-center gap-2">
+        <LanguageToggle />
         <ThemeToggle />
         <div className="flex items-center gap-2 rounded-lg px-2 py-1">
           <Avatar className="size-8">

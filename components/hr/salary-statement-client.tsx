@@ -25,6 +25,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type Factory = { id: string; name: string };
 type SalaryRow = {
@@ -40,6 +41,7 @@ export function SalaryStatementClient({
 }: {
   factories: Factory[];
 }) {
+  const { t } = useLanguage();
   const [startDate, setStartDate] = useState(todayInputValue());
   const [endDate, setEndDate] = useState(todayInputValue());
   const [factoryId, setFactoryId] = useState("");
@@ -52,7 +54,7 @@ export function SalaryStatementClient({
   );
 
   const factoryName =
-    factories.find((f) => f.id === factoryId)?.name || "Factory";
+    factories.find((f) => f.id === factoryId)?.name || t("factory");
 
   async function onLoad() {
     if (!startDate || !endDate || !factoryId) {
@@ -85,7 +87,12 @@ export function SalaryStatementClient({
       toast.error("Load statement first");
       return;
     }
-    const header = ["Employee Name", "Total Presents", "Total Bonus", "Final Salary"];
+    const header = [
+      t("employeeName"),
+      t("totalPresents"),
+      t("totalBonus"),
+      t("finalSalary"),
+    ];
     const lines = [
       header.join(","),
       ...rows.map((r) =>
@@ -115,13 +122,20 @@ export function SalaryStatementClient({
     }
     const doc = new jsPDF();
     doc.setFontSize(14);
-    doc.text("HR Salary Statement", 14, 16);
+    doc.text(t("hrSalaryStatement"), 14, 16);
     doc.setFontSize(10);
-    doc.text(`Factory: ${factoryName}`, 14, 24);
+    doc.text(`${t("factory")}: ${factoryName}`, 14, 24);
     doc.text(`Period: ${startDate} to ${endDate}`, 14, 30);
     autoTable(doc, {
       startY: 36,
-      head: [["Employee Name", "Total Presents", "Total Bonus", "Final Salary"]],
+      head: [
+        [
+          t("employeeName"),
+          t("totalPresents"),
+          t("totalBonus"),
+          t("finalSalary"),
+        ],
+      ],
       body: rows.map((r) => [
         r.name,
         String(r.totalPresents),
@@ -137,34 +151,30 @@ export function SalaryStatementClient({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="font-heading text-2xl font-semibold tracking-tight">
-            Salary Statement
+            {t("salaryStatement")}
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Calculate salary from attendance between start and end dates.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("salaryCalcDesc")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={downloadCsv} disabled={rows.length === 0}>
             <Download className="size-4" />
-            Download CSV
+            {t("downloadCsv")}
           </Button>
           <Button onClick={downloadPdf} disabled={rows.length === 0}>
             <Download className="size-4" />
-            Download Statement
+            {t("downloadStatementBtn")}
           </Button>
         </div>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
-          <CardDescription>
-            Daily wage = presents × rate + bonus. Monthly = fixed salary + bonus.
-          </CardDescription>
+          <CardTitle>{t("filters")}</CardTitle>
+          <CardDescription>{t("salaryHint")}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-4">
           <div className="space-y-2">
-            <Label htmlFor="sal-start">Start Date</Label>
+            <Label htmlFor="sal-start">{t("startDate")}</Label>
             <Input
               id="sal-start"
               type="date"
@@ -173,7 +183,7 @@ export function SalaryStatementClient({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="sal-end">End Date</Label>
+            <Label htmlFor="sal-end">{t("endDate")}</Label>
             <Input
               id="sal-end"
               type="date"
@@ -182,17 +192,17 @@ export function SalaryStatementClient({
             />
           </div>
           <div className="space-y-2">
-            <Label>Factory</Label>
+            <Label>{t("factory")}</Label>
             <AppSelect
               value={factoryId}
               onValueChange={setFactoryId}
               options={factoryOptions}
-              placeholder="Select factory"
+              placeholder={t("selectFactory")}
             />
           </div>
           <div className="flex items-end">
             <Button className="w-full" onClick={onLoad} disabled={loading}>
-              {loading ? "Loading…" : "Load Statement"}
+              {loading ? t("loading") : t("loadStatement")}
             </Button>
           </div>
         </CardContent>
@@ -200,21 +210,19 @@ export function SalaryStatementClient({
 
       <Card>
         <CardHeader>
-          <CardTitle>Results</CardTitle>
+          <CardTitle>{t("salaryStatement")}</CardTitle>
         </CardHeader>
         <CardContent>
           {rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              Set filters and click Load Statement.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("setFiltersHint")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Employee Name</TableHead>
-                  <TableHead>Total Presents</TableHead>
-                  <TableHead>Total Bonus</TableHead>
-                  <TableHead>Final Salary</TableHead>
+                  <TableHead>{t("employeeName")}</TableHead>
+                  <TableHead>{t("totalPresents")}</TableHead>
+                  <TableHead>{t("totalBonus")}</TableHead>
+                  <TableHead>{t("finalSalary")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

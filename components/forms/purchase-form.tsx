@@ -23,14 +23,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type Option = { id: string; name: string; unit?: string };
 type FormValues = z.infer<typeof purchaseSchema>;
-
-const sendToOptions = [
-  { value: "FACTORY", label: "Factory" },
-  { value: "WORKER", label: "Worker" },
-];
 
 export function PurchaseForm({
   dealers,
@@ -41,6 +37,14 @@ export function PurchaseForm({
   materials: Option[];
   workers: Option[];
 }) {
+  const { t } = useLanguage();
+  const sendToOptions = useMemo(
+    () => [
+      { value: "FACTORY", label: t("factory") },
+      { value: "WORKER", label: t("worker") },
+    ],
+    [t]
+  );
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -111,7 +115,7 @@ export function PurchaseForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Purchase Material (Kacha Maal Aana)</CardTitle>
+        <CardTitle>{t("purchaseTitle")}</CardTitle>
         <CardDescription>
           Buy multiple materials from one dealer. Send all to factory or directly
           to a worker.

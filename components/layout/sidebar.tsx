@@ -24,42 +24,47 @@ import {
 } from "@/components/ui/sheet";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 
-const navItems = [
-  { href: "/dashboard", label: "Dashboard Home", icon: LayoutDashboard },
+const navItems: {
+  href: string;
+  labelKey: TranslationKey;
+  icon: typeof LayoutDashboard;
+}[] = [
+  { href: "/dashboard", labelKey: "dashboardHome", icon: LayoutDashboard },
   {
     href: "/dashboard/purchase",
-    label: "Purchase Material",
+    labelKey: "purchaseMaterial",
     icon: ShoppingCart,
   },
   {
     href: "/dashboard/issue",
-    label: "Issue to Worker",
+    labelKey: "issueToWorker",
     icon: ArrowRightLeft,
   },
   {
     href: "/dashboard/receive",
-    label: "Receive Product",
+    labelKey: "receiveProduct",
     icon: PackageCheck,
   },
   {
     href: "/dashboard/statement",
-    label: "Download Statement",
+    labelKey: "downloadStatement",
     icon: FileDown,
   },
   {
     href: "/dashboard/attendance",
-    label: "Mark Attendance",
+    labelKey: "markAttendance",
     icon: ClipboardCheck,
   },
   {
     href: "/dashboard/salary",
-    label: "Salary Statement",
+    labelKey: "salaryStatement",
     icon: Wallet,
   },
   {
     href: "/dashboard/settings",
-    label: "Settings",
+    labelKey: "settings",
     icon: Settings,
   },
 ];
@@ -72,6 +77,7 @@ function NavLinks({
   onLogout: () => void;
 }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
 
   const isActive = (href: string) => {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -96,7 +102,7 @@ function NavLinks({
             )}
           >
             <Icon className="size-4 shrink-0" />
-            {item.label}
+            {t(item.labelKey)}
           </Link>
         );
       })}
@@ -106,16 +112,19 @@ function NavLinks({
         onClick={onLogout}
       >
         <LogOut className="size-4 shrink-0" />
-        Logout
+        {t("logout")}
       </Button>
     </nav>
   );
 }
 
-async function logout(router: ReturnType<typeof useRouter>) {
+async function logout(
+  router: ReturnType<typeof useRouter>,
+  loggedOutMessage: string
+) {
   const res = await fetch("/api/auth/logout", { method: "POST" });
   if (res.ok) {
-    toast.success("Logged out");
+    toast.success(loggedOutMessage);
     router.push("/login");
     router.refresh();
   }
@@ -123,6 +132,7 @@ async function logout(router: ReturnType<typeof useRouter>) {
 
 export function DesktopSidebar() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   return (
     <aside className="hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
@@ -135,7 +145,7 @@ export function DesktopSidebar() {
         </Link>
       </div>
       <div className="p-3">
-        <NavLinks onLogout={() => logout(router)} />
+        <NavLinks onLogout={() => logout(router, t("loggedOut"))} />
       </div>
     </aside>
   );
@@ -143,6 +153,7 @@ export function DesktopSidebar() {
 
 export function MobileNav() {
   const router = useRouter();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
 
   return (
@@ -152,7 +163,7 @@ export function MobileNav() {
           <Button
             variant="ghost"
             size="icon"
-            aria-label="Open menu"
+            aria-label={t("openMenu")}
             className="md:hidden"
           />
         }
@@ -163,7 +174,7 @@ export function MobileNav() {
         side="left"
         className="w-72 bg-sidebar p-0 text-sidebar-foreground"
       >
-        <SheetTitle className="sr-only">Navigation</SheetTitle>
+        <SheetTitle className="sr-only">{t("navigation")}</SheetTitle>
         <div className="flex h-14 items-center border-b border-sidebar-border px-4">
           <span className="font-heading text-lg font-semibold">
             Umer Traders
@@ -172,7 +183,7 @@ export function MobileNav() {
         <div className="p-3">
           <NavLinks
             onNavigate={() => setOpen(false)}
-            onLogout={() => logout(router)}
+            onLogout={() => logout(router, t("loggedOut"))}
           />
         </div>
       </SheetContent>

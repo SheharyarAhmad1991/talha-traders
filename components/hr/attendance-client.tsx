@@ -23,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type Factory = { id: string; name: string };
 type AttendanceRow = {
@@ -33,6 +34,7 @@ type AttendanceRow = {
 };
 
 export function AttendanceClient({ factories }: { factories: Factory[] }) {
+  const { t } = useLanguage();
   const [date, setDate] = useState(todayInputValue());
   const [factoryId, setFactoryId] = useState("");
   const [rows, setRows] = useState<AttendanceRow[]>([]);
@@ -125,23 +127,19 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
     <div className="space-y-4">
       <div>
         <h2 className="font-heading text-2xl font-semibold tracking-tight">
-          Mark Attendance
+          {t("markAttendance")}
         </h2>
-        <p className="text-sm text-muted-foreground">
-          Select a factory and mark present/absent with optional bonus.
-        </p>
+        <p className="text-sm text-muted-foreground">{t("attendanceHint")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Filters</CardTitle>
-          <CardDescription>
-            Attendance defaults to Present (ON). Turn OFF for absentees only.
-          </CardDescription>
+          <CardTitle>{t("filters")}</CardTitle>
+          <CardDescription>{t("attendanceHint")}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="att-date">Date</Label>
+            <Label htmlFor="att-date">{t("date")}</Label>
             <Input
               id="att-date"
               type="date"
@@ -150,12 +148,12 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
             />
           </div>
           <div className="space-y-2">
-            <Label>Factory</Label>
+            <Label>{t("factory")}</Label>
             <AppSelect
               value={factoryId}
               onValueChange={setFactoryId}
               options={factoryOptions}
-              placeholder="Select factory"
+              placeholder={t("selectFactory")}
             />
           </div>
         </CardContent>
@@ -163,26 +161,24 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
 
       <Card>
         <CardHeader>
-          <CardTitle>Employees</CardTitle>
+          <CardTitle>{t("employee")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {!factoryId ? (
             <p className="text-sm text-muted-foreground">
-              Select a factory to load employees.
+              {t("selectFactory")}
             </p>
           ) : loading ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
+            <p className="text-sm text-muted-foreground">{t("loading")}</p>
           ) : rows.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              No employees assigned to this factory.
-            </p>
+            <p className="text-sm text-muted-foreground">{t("noEmployees")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Present</TableHead>
-                  <TableHead>Bonus</TableHead>
+                  <TableHead>{t("name")}</TableHead>
+                  <TableHead>{t("present")}</TableHead>
+                  <TableHead>{t("bonus")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -200,7 +196,7 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
                           }
                         />
                         <span className="text-sm text-muted-foreground">
-                          {row.isPresent ? "Yes" : "No"}
+                          {row.isPresent ? t("present") : t("absent")}
                         </span>
                       </div>
                     </TableCell>
@@ -234,7 +230,7 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
             onClick={onSave}
             disabled={saving || !factoryId || rows.length === 0}
           >
-            {saving ? "Saving…" : "Save Attendance"}
+            {saving ? t("saving") : t("saveAttendance")}
           </Button>
         </CardContent>
       </Card>

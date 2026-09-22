@@ -1,12 +1,5 @@
-import Link from "next/link";
 import { format } from "date-fns";
-import {
-  ShoppingCart,
-  ArrowRightLeft,
-  PackageCheck,
-  Warehouse,
-  Users,
-} from "lucide-react";
+import { Warehouse, Users } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import {
   Card,
@@ -15,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -25,6 +17,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { DashboardHomeChrome } from "@/components/i18n/dashboard-home-chrome";
 
 export default async function DashboardHomePage() {
   // Sequential queries — Supabase free pooler + connection_limit=1
@@ -48,14 +41,7 @@ export default async function DashboardHomePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="font-heading text-2xl font-semibold tracking-tight">
-          Dashboard Home
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Running material balances and recent activity for Umer Traders.
-        </p>
-      </div>
+      <DashboardHomeChrome />
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
@@ -92,27 +78,6 @@ export default async function DashboardHomePage() {
             <CardTitle className="text-3xl">{workerCount}</CardTitle>
           </CardHeader>
         </Card>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <Link href="/dashboard/purchase">
-          <Button>
-            <ShoppingCart data-icon="inline-start" />
-            Purchase Material
-          </Button>
-        </Link>
-        <Link href="/dashboard/issue">
-          <Button variant="outline">
-            <ArrowRightLeft data-icon="inline-start" />
-            Issue to Worker
-          </Button>
-        </Link>
-        <Link href="/dashboard/receive">
-          <Button variant="outline">
-            <PackageCheck data-icon="inline-start" />
-            Receive Product
-          </Button>
-        </Link>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">

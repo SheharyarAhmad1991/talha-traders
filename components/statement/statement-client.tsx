@@ -25,6 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 const recordTypeOptions = [
   { value: "ALL", label: "All" },
@@ -51,6 +52,7 @@ type LogRow = {
 };
 
 export function StatementClient() {
+  const { t } = useLanguage();
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [type, setType] = useState("ALL");
@@ -244,7 +246,7 @@ export function StatementClient() {
     <div className="space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>Download Statement</CardTitle>
+          <CardTitle>{t("downloadStatement")}</CardTitle>
           <CardDescription>
             View, edit, or delete purchase / issue / receive records. Filters
             and PDF/CSV export included.

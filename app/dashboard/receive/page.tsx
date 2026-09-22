@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { ReceiveForm } from "@/components/forms/receive-form";
+import { PageHeader } from "@/components/i18n/page-header";
 
 export default async function ReceivePage() {
   const [workers, products, materials] = await Promise.all([
@@ -10,14 +11,7 @@ export default async function ReceivePage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">
-      <div>
-        <h2 className="font-heading text-2xl font-semibold tracking-tight">
-          Receive Product
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Labor se Shop — receive finished goods and log mazdoori paid.
-        </p>
-      </div>
+      <PageHeader titleKey="receiveProduct" />
       <ReceiveForm
         workers={workers}
         products={products}

@@ -23,6 +23,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type Option = { id: string; name: string; unit?: string };
 type FormValues = z.infer<typeof receiveSchema>;
@@ -36,6 +37,7 @@ export function ReceiveForm({
   products: Option[];
   materials: Option[];
 }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -119,7 +121,7 @@ export function ReceiveForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Receive Product (Labor se Shop)</CardTitle>
+        <CardTitle>{t("receiveTitle")}</CardTitle>
         <CardDescription>
           Receive multiple finished products and deduct multiple raw materials
           from the worker.
@@ -308,7 +310,7 @@ export function ReceiveForm({
           <ImageUpload value={imageFile} onChange={setImageFile} />
 
           <Button type="submit" disabled={loading}>
-            {loading ? "Saving..." : "Receive Product"}
+            {loading ? t("saving") : t("receiveProduct")}
           </Button>
         </form>
       </CardContent>

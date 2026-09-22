@@ -30,6 +30,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type Factory = { id: string; name: string };
 type Employee = {
@@ -41,11 +42,6 @@ type Employee = {
   factory?: Factory;
 };
 
-const salaryTypeOptions = [
-  { value: "DAILY", label: "Daily Wage" },
-  { value: "MONTHLY", label: "Monthly Fixed" },
-];
-
 export function HrEmployeesSection({
   factories: initialFactories,
   employees: initialEmployees,
@@ -53,6 +49,14 @@ export function HrEmployeesSection({
   factories: Factory[];
   employees: Employee[];
 }) {
+  const { t } = useLanguage();
+  const salaryTypeOptions = useMemo(
+    () => [
+      { value: "DAILY", label: t("dailyWage") },
+      { value: "MONTHLY", label: t("monthlyFixed") },
+    ],
+    [t]
+  );
   const router = useRouter();
   const [factories, setFactories] = useState(initialFactories);
   const [employees, setEmployees] = useState(initialEmployees);
@@ -173,31 +177,29 @@ export function HrEmployeesSection({
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
         <div>
-          <CardTitle>Add Factories Employees</CardTitle>
+          <CardTitle>{t("addFactoriesEmployees")}</CardTitle>
           <CardDescription>
-            Add employees with factory assignment and salary type.
+            {t("employee")} · {t("factory")} · {t("dailyWage")} / {t("monthlySalary")}
           </CardDescription>
         </div>
         <Button onClick={openCreate} disabled={factories.length === 0}>
           <Plus className="size-4" />
-          Add Employee
+          {t("add")} {t("employee")}
         </Button>
       </CardHeader>
       <CardContent>
         {factories.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            Add an HR Factory first, then add employees.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("noFactories")}</p>
         ) : employees.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No employees yet.</p>
+          <p className="text-sm text-muted-foreground">{t("noEmployees")}</p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Factory</TableHead>
-                <TableHead>Salary Type</TableHead>
-                <TableHead>Amount</TableHead>
+                <TableHead>{t("name")}</TableHead>
+                <TableHead>{t("factory")}</TableHead>
+                <TableHead>{t("salaryType")}</TableHead>
+                <TableHead>{t("salaryAmount")}</TableHead>
                 <TableHead className="w-[100px]" />
               </TableRow>
             </TableHeader>
@@ -207,7 +209,9 @@ export function HrEmployeesSection({
                   <TableCell>{item.name}</TableCell>
                   <TableCell>{item.factory?.name || "—"}</TableCell>
                   <TableCell>
-                    {item.salaryType === "DAILY" ? "Daily Wage" : "Monthly Fixed"}
+                    {item.salaryType === "DAILY"
+                      ? t("dailyWage")
+                      : t("monthlyFixed")}
                   </TableCell>
                   <TableCell>{item.salaryAmount}</TableCell>
                   <TableCell>
@@ -216,7 +220,7 @@ export function HrEmployeesSection({
                         variant="ghost"
                         size="icon"
                         onClick={() => openEdit(item)}
-                        aria-label="Edit"
+                        aria-label={t("edit")}
                       >
                         <Pencil className="size-4" />
                       </Button>
@@ -224,7 +228,7 @@ export function HrEmployeesSection({
                         variant="ghost"
                         size="icon"
                         onClick={() => onDelete(item)}
-                        aria-label="Delete"
+                        aria-label={t("delete")}
                       >
                         <Trash2 className="size-4" />
                       </Button>
@@ -241,12 +245,14 @@ export function HrEmployeesSection({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editing ? "Edit Employee" : "Add Employee"}
+              {editing
+                ? `${t("edit")} ${t("employee")}`
+                : `${t("add")} ${t("employee")}`}
             </DialogTitle>
           </DialogHeader>
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="hr-emp-name">Employee Name</Label>
+              <Label htmlFor="hr-emp-name">{t("employeeName")}</Label>
               <Input
                 id="hr-emp-name"
                 value={name}
@@ -254,16 +260,16 @@ export function HrEmployeesSection({
               />
             </div>
             <div className="space-y-2">
-              <Label>Assigned Factory</Label>
+              <Label>{t("factory")}</Label>
               <AppSelect
                 value={factoryId}
                 onValueChange={setFactoryId}
                 options={factoryOptions}
-                placeholder="Select factory"
+                placeholder={t("selectFactory")}
               />
             </div>
             <div className="space-y-2">
-              <Label>Salary Type</Label>
+              <Label>{t("salaryType")}</Label>
               <AppSelect
                 value={salaryType}
                 onValueChange={(v) =>
@@ -273,7 +279,7 @@ export function HrEmployeesSection({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="hr-emp-amount">Salary Amount</Label>
+              <Label htmlFor="hr-emp-amount">{t("salaryAmount")}</Label>
               <Input
                 id="hr-emp-amount"
                 type="number"
@@ -288,7 +294,7 @@ export function HrEmployeesSection({
             )}
             <DialogFooter>
               <Button type="submit" disabled={loading}>
-                {loading ? "Saving…" : "Save"}
+                {loading ? t("saving") : t("save")}
               </Button>
             </DialogFooter>
           </form>

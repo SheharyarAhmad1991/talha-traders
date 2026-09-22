@@ -26,6 +26,7 @@ import {
   WorkerPendingBalance,
   FactoryStockPanel,
 } from "@/components/forms/balance-panels";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 type Option = { id: string; name: string; unit?: string };
 type FormValues = z.infer<typeof issueSchema>;
@@ -37,6 +38,7 @@ export function IssueForm({
   workers: Option[];
   materials: Option[];
 }) {
+  const { t } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -100,7 +102,7 @@ export function IssueForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Issue to Worker (Factory se Labor)</CardTitle>
+        <CardTitle>{t("issueTitle")}</CardTitle>
         <CardDescription>
           Issue multiple materials from factory stock to one worker.
         </CardDescription>

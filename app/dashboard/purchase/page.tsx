@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { PurchaseForm } from "@/components/forms/purchase-form";
+import { PageHeader } from "@/components/i18n/page-header";
 
 export default async function PurchasePage() {
   const [dealers, materials, workers] = await Promise.all([
@@ -10,14 +11,7 @@ export default async function PurchasePage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-4">
-      <div>
-        <h2 className="font-heading text-2xl font-semibold tracking-tight">
-          Purchase Material
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Kacha Maal Aana — record purchases and route stock to factory or worker.
-        </p>
-      </div>
+      <PageHeader titleKey="purchaseMaterial" />
       <PurchaseForm
         dealers={dealers}
         materials={materials}
