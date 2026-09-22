@@ -47,6 +47,7 @@ export async function POST(request: Request) {
   const employee = await prisma.hREmployee.create({
     data: {
       name: parsed.data.name.trim(),
+      nameUr: parsed.data.nameUr?.trim() || null,
       factoryId: parsed.data.factoryId,
       salaryType: parsed.data.salaryType,
       salaryAmount: parsed.data.salaryAmount,

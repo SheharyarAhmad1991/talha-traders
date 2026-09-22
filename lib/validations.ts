@@ -7,21 +7,25 @@ export const loginSchema = z.object({
 
 export const dealerSchema = z.object({
   name: z.string().min(1, "Name is required"),
+  nameUr: z.string().optional(),
   phone: z.string().optional(),
 });
 
 export const workerSchema = z.object({
   name: z.string().min(1, "Name is required"),
+  nameUr: z.string().optional(),
   phone: z.string().optional(),
 });
 
 export const rawMaterialSchema = z.object({
   name: z.string().min(1, "Name is required"),
+  nameUr: z.string().optional(),
   unit: z.string().min(1, "Unit is required"),
 });
 
 export const finishedProductSchema = z.object({
   name: z.string().min(1, "Name is required"),
+  nameUr: z.string().optional(),
   unit: z.string().min(1, "Unit is required"),
 });
 
@@ -103,10 +107,12 @@ export const statementFilterSchema = z.object({
 
 export const hrFactorySchema = z.object({
   name: z.string().min(1, "Name is required"),
+  nameUr: z.string().optional(),
 });
 
 export const hrEmployeeSchema = z.object({
   name: z.string().min(1, "Employee name is required"),
+  nameUr: z.string().optional(),
   factoryId: z.string().min(1, "Factory is required"),
   salaryType: z.enum(["DAILY", "MONTHLY"]),
   salaryAmount: z.coerce.number().positive("Salary amount must be greater than 0"),

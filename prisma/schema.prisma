@@ -19,6 +19,7 @@ model Admin {
 model Dealer {
   id        String   @id @default(cuid())
   name      String
+  nameUr    String?
   phone     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -27,6 +28,7 @@ model Dealer {
 model Worker {
   id        String            @id @default(cuid())
   name      String
+  nameUr    String?
   phone     String?
   createdAt DateTime          @default(now())
   updatedAt DateTime          @updatedAt
@@ -36,6 +38,7 @@ model Worker {
 model RawMaterial {
   id               String             @id @default(cuid())
   name             String
+  nameUr           String?
   unit             String
   createdAt        DateTime           @default(now())
   updatedAt        DateTime           @updatedAt
@@ -46,6 +49,7 @@ model RawMaterial {
 model FinishedProduct {
   id        String   @id @default(cuid())
   name      String
+  nameUr    String?
   unit      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -119,12 +123,14 @@ enum HRSalaryType {
 model HRFactory {
   id        String       @id @default(cuid())
   name      String
+  nameUr    String?
   employees HREmployee[]
 }
 
 model HREmployee {
   id           String         @id @default(cuid())
   name         String
+  nameUr       String?
   factoryId    String
   salaryType   HRSalaryType
   salaryAmount Float

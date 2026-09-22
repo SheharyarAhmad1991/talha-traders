@@ -17,8 +17,9 @@ import {
 } from "@/components/ui/card";
 import { Plus, Trash2 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { localizedName, optionLabel } from "@/lib/i18n/localize";
 
-type Option = { id: string; name: string; unit?: string };
+type Option = { id: string; name: string; nameUr?: string | null; unit?: string };
 
 type LogRecord = {
   id: string;
@@ -52,7 +53,7 @@ export function EditTransactionForm({
   materials: Option[];
   products: Option[];
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [date, setDate] = useState(log.date.slice(0, 10));
@@ -89,28 +90,36 @@ export function EditTransactionForm({
   );
 
   const dealerOptions = useMemo(
-    () => dealers.map((d) => ({ value: d.id, label: d.name })),
-    [dealers]
+    () =>
+      dealers.map((d) => ({
+        value: d.id,
+        label: localizedName(d, language),
+      })),
+    [dealers, language]
   );
   const workerOptions = useMemo(
-    () => workers.map((w) => ({ value: w.id, label: w.name })),
-    [workers]
+    () =>
+      workers.map((w) => ({
+        value: w.id,
+        label: localizedName(w, language),
+      })),
+    [workers, language]
   );
   const materialOptions = useMemo(
     () =>
       materials.map((m) => ({
         value: m.id,
-        label: m.unit ? `${m.name} (${m.unit})` : m.name,
+        label: optionLabel(m, language),
       })),
-    [materials]
+    [materials, language]
   );
   const productOptions = useMemo(
     () =>
       products.map((p) => ({
         value: p.id,
-        label: p.unit ? `${p.name} (${p.unit})` : p.name,
+        label: optionLabel(p, language),
       })),
-    [products]
+    [products, language]
   );
 
   async function onSubmit(e: React.FormEvent) {

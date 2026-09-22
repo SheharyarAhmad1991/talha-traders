@@ -31,11 +31,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { localizedName } from "@/lib/i18n/localize";
 
-type Factory = { id: string; name: string };
+type Factory = { id: string; name: string; nameUr?: string | null };
 type Employee = {
   id: string;
   name: string;
+  nameUr?: string | null;
   factoryId: string;
   salaryType: "DAILY" | "MONTHLY";
   salaryAmount: number;
@@ -49,7 +51,7 @@ export function HrEmployeesSection({
   factories: Factory[];
   employees: Employee[];
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const salaryTypeOptions = useMemo(
     () => [
       { value: "DAILY", label: t("dailyWage") },
@@ -64,14 +66,19 @@ export function HrEmployeesSection({
   const [editing, setEditing] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(false);
   const [name, setName] = useState("");
+  const [nameUr, setNameUr] = useState("");
   const [factoryId, setFactoryId] = useState("");
   const [salaryType, setSalaryType] = useState<"DAILY" | "MONTHLY">("DAILY");
   const [salaryAmount, setSalaryAmount] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
 
   const factoryOptions = useMemo(
-    () => factories.map((f) => ({ value: f.id, label: f.name })),
-    [factories]
+    () =>
+      factories.map((f) => ({
+        value: f.id,
+        label: localizedName(f, language),
+      })),
+    [factories, language]
   );
 
   const reload = useCallback(async () => {
@@ -97,6 +104,7 @@ export function HrEmployeesSection({
     setEditing(null);
     setFormError(null);
     setName("");
+    setNameUr("");
     setFactoryId(factories[0]?.id || "");
     setSalaryType("DAILY");
     setSalaryAmount("");
@@ -107,6 +115,7 @@ export function HrEmployeesSection({
     setEditing(item);
     setFormError(null);
     setName(item.name);
+    setNameUr(item.nameUr || "");
     setFactoryId(item.factoryId);
     setSalaryType(item.salaryType);
     setSalaryAmount(String(item.salaryAmount));
@@ -140,6 +149,7 @@ export function HrEmployeesSection({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
+          nameUr: nameUr.trim() || null,
           factoryId,
           salaryType,
           salaryAmount: Number(salaryAmount),
@@ -159,7 +169,7 @@ export function HrEmployeesSection({
   }
 
   async function onDelete(item: Employee) {
-    if (!confirm(`Delete employee "${item.name}"?`)) return;
+    if (!confirm(`Delete employee "${localizedName(item, language)}"?`)) return;
     const res = await fetch(`/api/hr/employees/${item.id}`, {
       method: "DELETE",
     });
@@ -179,7 +189,8 @@ export function HrEmployeesSection({
         <div>
           <CardTitle>{t("addFactoriesEmployees")}</CardTitle>
           <CardDescription>
-            {t("employee")} · {t("factory")} · {t("dailyWage")} / {t("monthlySalary")}
+            {t("employee")} · {t("factory")} · {t("dailyWage")} /{" "}
+            {t("monthlySalary")}
           </CardDescription>
         </div>
         <Button onClick={openCreate} disabled={factories.length === 0}>
@@ -206,8 +217,12 @@ export function HrEmployeesSection({
             <TableBody>
               {employees.map((item) => (
                 <TableRow key={item.id}>
-                  <TableCell>{item.name}</TableCell>
-                  <TableCell>{item.factory?.name || "—"}</TableCell>
+                  <TableCell>{localizedName(item, language)}</TableCell>
+                  <TableCell>
+                    {item.factory
+                      ? localizedName(item.factory, language)
+                      : "—"}
+                  </TableCell>
                   <TableCell>
                     {item.salaryType === "DAILY"
                       ? t("dailyWage")
@@ -257,6 +272,16 @@ export function HrEmployeesSection({
                 id="hr-emp-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="hr-emp-name-ur">{t("nameUr")}</Label>
+              <Input
+                id="hr-emp-name-ur"
+                value={nameUr}
+                onChange={(e) => setNameUr(e.target.value)}
+                placeholder={t("nameUrHint")}
+                autoComplete="off"
               />
             </div>
             <div className="space-y-2">

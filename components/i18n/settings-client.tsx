@@ -6,11 +6,18 @@ import { CrudSection } from "@/components/settings/crud-section";
 import { HrEmployeesSection } from "@/components/hr/hr-employees-section";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-type Item = { id: string; name: string; phone?: string | null; unit?: string };
-type Factory = { id: string; name: string };
+type Item = {
+  id: string;
+  name: string;
+  nameUr?: string | null;
+  phone?: string | null;
+  unit?: string;
+};
+type Factory = { id: string; name: string; nameUr?: string | null };
 type Employee = {
   id: string;
   name: string;
+  nameUr?: string | null;
   factoryId: string;
   salaryType: "DAILY" | "MONTHLY";
   salaryAmount: number;
@@ -58,6 +65,7 @@ export function SettingsClient({
             items={dealers}
             fields={[
               { key: "name", label: t("name"), type: "text" },
+              { key: "nameUr", label: t("nameUr"), type: "text" },
               { key: "phone", label: t("phone"), type: "text" },
             ]}
           />
@@ -71,6 +79,7 @@ export function SettingsClient({
             items={workers}
             fields={[
               { key: "name", label: t("name"), type: "text" },
+              { key: "nameUr", label: t("nameUr"), type: "text" },
               { key: "phone", label: t("phone"), type: "text" },
             ]}
           />
@@ -84,6 +93,7 @@ export function SettingsClient({
             items={materials}
             fields={[
               { key: "name", label: t("name"), type: "text" },
+              { key: "nameUr", label: t("nameUr"), type: "text" },
               { key: "unit", label: t("unit"), type: "text" },
             ]}
           />
@@ -97,6 +107,7 @@ export function SettingsClient({
             items={products}
             fields={[
               { key: "name", label: t("name"), type: "text" },
+              { key: "nameUr", label: t("nameUr"), type: "text" },
               { key: "unit", label: t("unit"), type: "text" },
             ]}
           />
@@ -108,7 +119,10 @@ export function SettingsClient({
             description={t("factoriesDesc")}
             endpoint="/api/hr/factories"
             items={hrFactories}
-            fields={[{ key: "name", label: t("name"), type: "text" }]}
+            fields={[
+              { key: "name", label: t("name"), type: "text" },
+              { key: "nameUr", label: t("nameUr"), type: "text" },
+            ]}
           />
         </TabsContent>
 

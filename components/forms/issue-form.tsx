@@ -27,8 +27,9 @@ import {
   FactoryStockPanel,
 } from "@/components/forms/balance-panels";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { optionLabel } from "@/lib/i18n/localize";
 
-type Option = { id: string; name: string; unit?: string };
+type Option = { id: string; name: string; nameUr?: string | null; unit?: string };
 type FormValues = z.infer<typeof issueSchema>;
 
 export function IssueForm({
@@ -38,22 +39,26 @@ export function IssueForm({
   workers: Option[];
   materials: Option[];
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
 
   const workerOptions = useMemo(
-    () => workers.map((w) => ({ value: w.id, label: w.name })),
-    [workers]
+    () =>
+      workers.map((w) => ({
+        value: w.id,
+        label: optionLabel(w, language),
+      })),
+    [workers, language]
   );
   const materialOptions = useMemo(
     () =>
       materials.map((m) => ({
         value: m.id,
-        label: m.unit ? `${m.name} (${m.unit})` : m.name,
+        label: optionLabel(m, language),
       })),
-    [materials]
+    [materials, language]
   );
 
   const {

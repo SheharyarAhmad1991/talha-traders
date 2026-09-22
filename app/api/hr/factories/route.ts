@@ -32,7 +32,10 @@ export async function POST(request: Request) {
     );
   }
   const factory = await prisma.hRFactory.create({
-    data: { name: parsed.data.name.trim() },
+    data: {
+      name: parsed.data.name.trim(),
+      nameUr: parsed.data.nameUr?.trim() || null,
+    },
   });
   return NextResponse.json(factory, { status: 201 });
 }

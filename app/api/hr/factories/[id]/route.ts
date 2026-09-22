@@ -27,7 +27,10 @@ export async function PUT(
   }
   const factory = await prisma.hRFactory.update({
     where: { id },
-    data: { name: parsed.data.name.trim() },
+    data: {
+      name: parsed.data.name.trim(),
+      nameUr: parsed.data.nameUr?.trim() || null,
+    },
   });
   return NextResponse.json(factory);
 }

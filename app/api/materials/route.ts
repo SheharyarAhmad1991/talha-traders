@@ -28,6 +28,7 @@ export async function POST(request: Request) {
   const material = await prisma.rawMaterial.create({
     data: {
       name: parsed.data.name.trim(),
+      nameUr: parsed.data.nameUr?.trim() || null,
       unit: parsed.data.unit.trim(),
     },
   });

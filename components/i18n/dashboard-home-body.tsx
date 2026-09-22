@@ -19,17 +19,18 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { localizedName } from "@/lib/i18n/localize";
 
 type FactoryRow = {
   id: string;
   quantity: number;
-  rawMaterial: { name: string; unit: string };
+  rawMaterial: { name: string; nameUr?: string | null; unit: string };
 };
 type WorkerRow = {
   id: string;
   quantity: number;
-  worker: { name: string };
-  rawMaterial: { name: string; unit: string };
+  worker: { name: string; nameUr?: string | null };
+  rawMaterial: { name: string; nameUr?: string | null; unit: string };
 };
 type LogRow = {
   id: string;
@@ -55,7 +56,7 @@ export function DashboardHomeBody({
   dealerCount: number;
   workerCount: number;
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <>
@@ -124,7 +125,9 @@ export function DashboardHomeBody({
                   ) : (
                     factoryStock.map((row) => (
                       <TableRow key={row.id}>
-                        <TableCell>{row.rawMaterial.name}</TableCell>
+                        <TableCell>
+                          {localizedName(row.rawMaterial, language)}
+                        </TableCell>
                         <TableCell className="text-right">
                           {row.quantity} {row.rawMaterial.unit}
                         </TableCell>
@@ -165,8 +168,12 @@ export function DashboardHomeBody({
                   ) : (
                     workerStock.map((row) => (
                       <TableRow key={row.id}>
-                        <TableCell>{row.worker.name}</TableCell>
-                        <TableCell>{row.rawMaterial.name}</TableCell>
+                        <TableCell>
+                          {localizedName(row.worker, language)}
+                        </TableCell>
+                        <TableCell>
+                          {localizedName(row.rawMaterial, language)}
+                        </TableCell>
                         <TableCell className="text-right">
                           {row.quantity} {row.rawMaterial.unit}
                         </TableCell>

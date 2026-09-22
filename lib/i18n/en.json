@@ -54,6 +54,8 @@
   "finishedProducts": "Finished Products",
   "settingsDesc": "Manage master data used in dropdown lists across the system.",
   "name": "Name",
+  "nameUr": "Name (Urdu)",
+  "nameUrHint": "Urdu name shown when language is Urdu",
   "phone": "Phone",
   "unit": "Unit",
   "salaryType": "Salary Type",

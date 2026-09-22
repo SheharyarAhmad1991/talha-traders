@@ -26,6 +26,7 @@ export async function POST(request: Request) {
   const worker = await prisma.worker.create({
     data: {
       name: parsed.data.name.trim(),
+      nameUr: parsed.data.nameUr?.trim() || null,
       phone: parsed.data.phone?.trim() || null,
     },
   });

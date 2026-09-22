@@ -48,6 +48,7 @@ export async function GET(request: Request) {
     return {
       employeeId: employee.id,
       name: employee.name,
+      nameUr: employee.nameUr,
       salaryType: employee.salaryType,
       salaryAmount: employee.salaryAmount,
       isPresent: existing?.isPresent ?? true,

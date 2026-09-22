@@ -26,11 +26,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { localizedName } from "@/lib/i18n/localize";
 
-type Factory = { id: string; name: string };
+type Factory = { id: string; name: string; nameUr?: string | null };
 type SalaryRow = {
   employeeId: string;
   name: string;
+  nameUr?: string | null;
   totalPresents: number;
   totalBonus: number;
   finalSalary: number;
@@ -41,7 +43,7 @@ export function SalaryStatementClient({
 }: {
   factories: Factory[];
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [startDate, setStartDate] = useState(todayInputValue());
   const [endDate, setEndDate] = useState(todayInputValue());
   const [factoryId, setFactoryId] = useState("");
@@ -49,12 +51,22 @@ export function SalaryStatementClient({
   const [loading, setLoading] = useState(false);
 
   const factoryOptions = useMemo(
-    () => factories.map((f) => ({ value: f.id, label: f.name })),
-    [factories]
+    () =>
+      factories.map((f) => ({
+        value: f.id,
+        label: localizedName(f, language),
+      })),
+    [factories, language]
   );
 
-  const factoryName =
-    factories.find((f) => f.id === factoryId)?.name || t("factory");
+  const selectedFactory = factories.find((f) => f.id === factoryId);
+  const factoryName = selectedFactory
+    ? localizedName(selectedFactory, language)
+    : t("factory");
+
+  function displayName(row: SalaryRow) {
+    return localizedName(row, language);
+  }
 
   async function onLoad() {
     if (!startDate || !endDate || !factoryId) {
@@ -95,14 +107,15 @@ export function SalaryStatementClient({
     ];
     const lines = [
       header.join(","),
-      ...rows.map((r) =>
-        [
-          `"${r.name.replace(/"/g, '""')}"`,
+      ...rows.map((r) => {
+        const name = displayName(r);
+        return [
+          `"${name.replace(/"/g, '""')}"`,
           r.totalPresents,
           r.totalBonus,
           r.finalSalary,
-        ].join(",")
-      ),
+        ].join(",");
+      }),
     ];
     const blob = new Blob([lines.join("\n")], {
       type: "text/csv;charset=utf-8;",
@@ -141,7 +154,7 @@ export function SalaryStatementClient({
         ],
       ],
       body: rows.map((r) => [
-        r.name,
+        displayName(r),
         String(r.totalPresents),
         String(r.totalBonus),
         String(r.finalSalary),
@@ -232,7 +245,7 @@ export function SalaryStatementClient({
               <TableBody>
                 {rows.map((row) => (
                   <TableRow key={row.employeeId}>
-                    <TableCell>{row.name}</TableCell>
+                    <TableCell>{displayName(row)}</TableCell>
                     <TableCell>{row.totalPresents}</TableCell>
                     <TableCell>{row.totalBonus}</TableCell>
                     <TableCell>{row.finalSalary}</TableCell>

@@ -23,6 +23,7 @@ export async function PUT(request: Request, { params }: Params) {
     where: { id },
     data: {
       name: parsed.data.name.trim(),
+      nameUr: parsed.data.nameUr?.trim() || null,
       phone: parsed.data.phone?.trim() || null,
     },
   });

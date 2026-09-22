@@ -24,17 +24,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { localizedName } from "@/lib/i18n/localize";
 
-type Factory = { id: string; name: string };
+type Factory = { id: string; name: string; nameUr?: string | null };
 type AttendanceRow = {
   employeeId: string;
   name: string;
+  nameUr?: string | null;
   isPresent: boolean;
   bonusAmount: number;
 };
 
 export function AttendanceClient({ factories }: { factories: Factory[] }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [date, setDate] = useState(todayInputValue());
   const [factoryId, setFactoryId] = useState("");
   const [rows, setRows] = useState<AttendanceRow[]>([]);
@@ -42,8 +44,12 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
   const [saving, setSaving] = useState(false);
 
   const factoryOptions = useMemo(
-    () => factories.map((f) => ({ value: f.id, label: f.name })),
-    [factories]
+    () =>
+      factories.map((f) => ({
+        value: f.id,
+        label: localizedName(f, language),
+      })),
+    [factories, language]
   );
 
   const loadRows = useCallback(async () => {
@@ -63,6 +69,7 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
         (data.rows || []).map((r: AttendanceRow) => ({
           employeeId: r.employeeId,
           name: r.name,
+          nameUr: r.nameUr,
           isPresent: r.isPresent ?? true,
           bonusAmount: r.bonusAmount ?? 0,
         }))
@@ -184,7 +191,7 @@ export function AttendanceClient({ factories }: { factories: Factory[] }) {
               <TableBody>
                 {rows.map((row) => (
                   <TableRow key={row.employeeId}>
-                    <TableCell>{row.name}</TableCell>
+                    <TableCell>{localizedName(row, language)}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Checkbox

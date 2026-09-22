@@ -30,16 +30,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { localizedName } from "@/lib/i18n/localize";
 
 type CrudItem = {
   id: string;
   name: string;
+  nameUr?: string | null;
   phone?: string | null;
   unit?: string | null;
 };
 
 type FieldConfig =
   | { key: "name"; label: string; type: "text" }
+  | { key: "nameUr"; label: string; type: "text" }
   | { key: "phone"; label: string; type: "text" }
   | { key: "unit"; label: string; type: "text" };
 
@@ -58,7 +61,7 @@ export function CrudSection({
   items: initialItems,
   fields,
 }: Props) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const router = useRouter();
   const [items, setItems] = useState<CrudItem[]>(initialItems);
   const [open, setOpen] = useState(false);
@@ -163,6 +166,13 @@ export function CrudSection({
     }
   }
 
+  function cellValue(item: CrudItem, key: FieldConfig["key"]) {
+    if (key === "name") {
+      return localizedName(item, language) || "—";
+    }
+    return (item[key] as string) || "—";
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-start justify-between gap-3">
@@ -200,9 +210,7 @@ export function CrudSection({
                 items.map((item) => (
                   <TableRow key={item.id}>
                     {fields.map((f) => (
-                      <TableCell key={f.key}>
-                        {(item[f.key] as string) || "—"}
-                      </TableCell>
+                      <TableCell key={f.key}>{cellValue(item, f.key)}</TableCell>
                     ))}
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
@@ -254,7 +262,9 @@ export function CrudSection({
                       [field.key]: e.target.value,
                     }))
                   }
-                  placeholder={field.label}
+                  placeholder={
+                    field.key === "nameUr" ? t("nameUrHint") : field.label
+                  }
                   autoComplete="off"
                 />
               </div>
