@@ -20,6 +20,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { localizedName } from "@/lib/i18n/localize";
+import { autoUrduUnit } from "@/lib/i18n/auto-urdu";
 
 type FactoryRow = {
   id: string;
@@ -129,7 +130,11 @@ export function DashboardHomeBody({
                           {localizedName(row.rawMaterial, language)}
                         </TableCell>
                         <TableCell className="text-right">
-                          {row.quantity} {row.rawMaterial.unit}
+                          {row.quantity}{" "}
+                          {language === "ur"
+                            ? autoUrduUnit(row.rawMaterial.unit) ||
+                              row.rawMaterial.unit
+                            : row.rawMaterial.unit}
                         </TableCell>
                       </TableRow>
                     ))
@@ -175,7 +180,11 @@ export function DashboardHomeBody({
                           {localizedName(row.rawMaterial, language)}
                         </TableCell>
                         <TableCell className="text-right">
-                          {row.quantity} {row.rawMaterial.unit}
+                          {row.quantity}{" "}
+                          {language === "ur"
+                            ? autoUrduUnit(row.rawMaterial.unit) ||
+                              row.rawMaterial.unit
+                            : row.rawMaterial.unit}
                         </TableCell>
                       </TableRow>
                     ))

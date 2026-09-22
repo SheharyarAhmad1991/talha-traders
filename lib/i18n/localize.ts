@@ -1,3 +1,5 @@
+import { autoUrduName, autoUrduUnit } from "@/lib/i18n/auto-urdu";
+
 export type AppLanguage = "en" | "ur";
 
 export type NamedItem = {
@@ -5,16 +7,21 @@ export type NamedItem = {
   nameUr?: string | null;
 };
 
-/** Show Urdu name when language is ur (fallback to English name). */
+/**
+ * English mode → English name.
+ * Urdu mode → saved nameUr, or auto Urdu from English so nothing stays Latin.
+ */
 export function localizedName(
   item: NamedItem | null | undefined,
   language: AppLanguage
 ): string {
   if (!item) return "";
-  if (language === "ur" && item.nameUr?.trim()) {
-    return item.nameUr.trim();
-  }
-  return item.name;
+  const english = item.name?.trim() || "";
+  if (language !== "ur") return english;
+
+  const saved = item.nameUr?.trim();
+  if (saved) return saved;
+  return autoUrduName(english) || english;
 }
 
 export function optionLabel(
@@ -22,5 +29,8 @@ export function optionLabel(
   language: AppLanguage
 ): string {
   const name = localizedName(item, language);
-  return item.unit ? `${name} (${item.unit})` : name;
+  if (!item.unit) return name;
+  const unit =
+    language === "ur" ? autoUrduUnit(item.unit) || item.unit : item.unit;
+  return `${name} (${unit})`;
 }
