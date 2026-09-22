@@ -98,3 +98,36 @@ export const statementFilterSchema = z.object({
   endDate: z.string().optional(),
   type: z.enum(["ALL", "PURCHASE", "ISSUE", "RECEIVE"]).default("ALL"),
 });
+
+// --- HR & Payroll ---
+
+export const hrFactorySchema = z.object({
+  name: z.string().min(1, "Name is required"),
+});
+
+export const hrEmployeeSchema = z.object({
+  name: z.string().min(1, "Employee name is required"),
+  factoryId: z.string().min(1, "Factory is required"),
+  salaryType: z.enum(["DAILY", "MONTHLY"]),
+  salaryAmount: z.coerce.number().positive("Salary amount must be greater than 0"),
+});
+
+export const hrAttendanceSaveSchema = z.object({
+  date: z.string().min(1, "Date is required"),
+  factoryId: z.string().min(1, "Factory is required"),
+  rows: z
+    .array(
+      z.object({
+        employeeId: z.string().min(1),
+        isPresent: z.boolean(),
+        bonusAmount: z.coerce.number().min(0).default(0),
+      })
+    )
+    .min(1, "No employees to save"),
+});
+
+export const hrSalaryFilterSchema = z.object({
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().min(1, "End date is required"),
+  factoryId: z.string().min(1, "Factory is required"),
+});

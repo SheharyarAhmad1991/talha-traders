@@ -11,6 +11,8 @@ import {
   Settings,
   LogOut,
   Menu,
+  ClipboardCheck,
+  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -44,6 +46,16 @@ const navItems = [
     href: "/dashboard/statement",
     label: "Download Statement",
     icon: FileDown,
+  },
+  {
+    href: "/dashboard/attendance",
+    label: "Mark Attendance",
+    icon: ClipboardCheck,
+  },
+  {
+    href: "/dashboard/salary",
+    label: "Salary Statement",
+    icon: Wallet,
   },
   {
     href: "/dashboard/settings",

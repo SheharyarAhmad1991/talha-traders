@@ -108,3 +108,38 @@ model TransactionLog {
   @@index([batchId])
   @@index([type, date])
 }
+
+// --- HR & Payroll (isolated from inventory models) ---
+
+enum HRSalaryType {
+  DAILY
+  MONTHLY
+}
+
+model HRFactory {
+  id        String       @id @default(cuid())
+  name      String
+  employees HREmployee[]
+}
+
+model HREmployee {
+  id           String         @id @default(cuid())
+  name         String
+  factoryId    String
+  salaryType   HRSalaryType
+  salaryAmount Float
+  factory      HRFactory      @relation(fields: [factoryId], references: [id], onDelete: Cascade)
+  attendance   HRAttendance[]
+}
+
+model HRAttendance {
+  id          String     @id @default(cuid())
+  date        DateTime
+  employeeId  String
+  isPresent   Boolean    @default(true)
+  bonusAmount Float      @default(0)
+  employee    HREmployee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  @@unique([employeeId, date])
+  @@index([date])
+}

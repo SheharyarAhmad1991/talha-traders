@@ -1,14 +1,21 @@
 import { prisma } from "@/lib/prisma";
 import { CrudSection } from "@/components/settings/crud-section";
+import { HrEmployeesSection } from "@/components/hr/hr-employees-section";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function SettingsPage() {
-  const [dealers, workers, materials, products] = await Promise.all([
-    prisma.dealer.findMany({ orderBy: { name: "asc" } }),
-    prisma.worker.findMany({ orderBy: { name: "asc" } }),
-    prisma.rawMaterial.findMany({ orderBy: { name: "asc" } }),
-    prisma.finishedProduct.findMany({ orderBy: { name: "asc" } }),
-  ]);
+  const [dealers, workers, materials, products, hrFactories, hrEmployees] =
+    await Promise.all([
+      prisma.dealer.findMany({ orderBy: { name: "asc" } }),
+      prisma.worker.findMany({ orderBy: { name: "asc" } }),
+      prisma.rawMaterial.findMany({ orderBy: { name: "asc" } }),
+      prisma.finishedProduct.findMany({ orderBy: { name: "asc" } }),
+      prisma.hRFactory.findMany({ orderBy: { name: "asc" } }),
+      prisma.hREmployee.findMany({
+        include: { factory: true },
+        orderBy: { name: "asc" },
+      }),
+    ]);
 
   return (
     <div className="space-y-4">
@@ -22,11 +29,13 @@ export default async function SettingsPage() {
       </div>
 
       <Tabs defaultValue="dealers">
-        <TabsList>
+        <TabsList className="flex h-auto flex-wrap gap-1">
           <TabsTrigger value="dealers">Dealers</TabsTrigger>
           <TabsTrigger value="workers">Workers / Labor</TabsTrigger>
           <TabsTrigger value="materials">Raw Materials</TabsTrigger>
           <TabsTrigger value="products">Finished Products</TabsTrigger>
+          <TabsTrigger value="hr-factories">Add Factories</TabsTrigger>
+          <TabsTrigger value="hr-employees">Add Factories Employees</TabsTrigger>
         </TabsList>
 
         <TabsContent value="dealers" className="mt-4">
@@ -78,6 +87,23 @@ export default async function SettingsPage() {
               { key: "name", label: "Name", type: "text" },
               { key: "unit", label: "Unit", type: "text" },
             ]}
+          />
+        </TabsContent>
+
+        <TabsContent value="hr-factories" className="mt-4">
+          <CrudSection
+            title="Add Factories"
+            description="Factories used only for HR employees and attendance."
+            endpoint="/api/hr/factories"
+            items={hrFactories}
+            fields={[{ key: "name", label: "Name", type: "text" }]}
+          />
+        </TabsContent>
+
+        <TabsContent value="hr-employees" className="mt-4">
+          <HrEmployeesSection
+            factories={hrFactories}
+            employees={hrEmployees}
           />
         </TabsContent>
       </Tabs>
