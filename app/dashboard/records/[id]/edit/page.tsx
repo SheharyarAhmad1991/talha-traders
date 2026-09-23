@@ -9,14 +9,12 @@ export default async function EditTransactionPage({ params }: Props) {
   const log = await prisma.transactionLog.findUnique({ where: { id } });
   if (!log) notFound();
 
-  const dealers = await prisma.dealer.findMany({ orderBy: { name: "asc" } });
-  const workers = await prisma.worker.findMany({ orderBy: { name: "asc" } });
-  const materials = await prisma.rawMaterial.findMany({
-    orderBy: { name: "asc" },
-  });
-  const products = await prisma.finishedProduct.findMany({
-    orderBy: { name: "asc" },
-  });
+  const [dealers, workers, materials, products] = await Promise.all([
+    prisma.dealer.findMany({ orderBy: { name: "asc" } }),
+    prisma.worker.findMany({ orderBy: { name: "asc" } }),
+    prisma.rawMaterial.findMany({ orderBy: { name: "asc" } }),
+    prisma.finishedProduct.findMany({ orderBy: { name: "asc" } }),
+  ]);
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
