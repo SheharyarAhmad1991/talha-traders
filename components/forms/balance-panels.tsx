@@ -107,12 +107,23 @@ export function WorkerPendingBalance({ workerId }: { workerId?: string }) {
   );
 }
 
-export function FactoryStockPanel() {
+export function FactoryStockPanel({
+  initialData,
+}: {
+  initialData?: BalanceRow[];
+}) {
   const { t, language } = useLanguage();
-  const [stocks, setStocks] = useState<BalanceRow[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [stocks, setStocks] = useState<BalanceRow[]>(initialData || []);
+  const [loading, setLoading] = useState(!initialData);
 
   useEffect(() => {
+    // Already hydrated from the server — skip an extra round trip
+    if (initialData) {
+      setStocks(initialData);
+      setLoading(false);
+      return;
+    }
+
     let cancelled = false;
     setLoading(true);
     fetch("/api/inventory", { cache: "no-store", credentials: "same-origin" })
@@ -132,7 +143,7 @@ export function FactoryStockPanel() {
     return () => {
       cancelled = true;
     };
-  }, [t]);
+  }, [t, initialData]);
 
   return (
     <div className="space-y-2 rounded-lg border bg-muted/30 p-3">

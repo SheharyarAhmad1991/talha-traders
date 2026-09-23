@@ -35,9 +35,17 @@ type FormValues = z.infer<typeof issueSchema>;
 export function IssueForm({
   workers,
   materials,
+  initialFactoryStock,
 }: {
   workers: Option[];
   materials: Option[];
+  initialFactoryStock?: {
+    rawMaterialId?: string;
+    materialName: string;
+    materialNameUr?: string | null;
+    unit: string;
+    quantity: number;
+  }[];
 }) {
   const { t, language } = useLanguage();
   const router = useRouter();
@@ -145,7 +153,7 @@ export function IssueForm({
             </div>
           </div>
 
-          <FactoryStockPanel />
+          <FactoryStockPanel initialData={initialFactoryStock} />
 
           {workerId ? <WorkerPendingBalance workerId={workerId} /> : null}
 
