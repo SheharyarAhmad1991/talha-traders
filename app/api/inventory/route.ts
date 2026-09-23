@@ -23,6 +23,7 @@ export async function GET(request: Request) {
           id: row.id,
           rawMaterialId: row.rawMaterialId,
           materialName: row.rawMaterial.name,
+          materialNameUr: row.rawMaterial.nameUr,
           unit: row.rawMaterial.unit,
           quantity: row.quantity,
         }))
@@ -41,6 +42,7 @@ export async function GET(request: Request) {
         id: row.id,
         rawMaterialId: row.rawMaterialId,
         materialName: row.rawMaterial.name,
+        materialNameUr: row.rawMaterial.nameUr,
         unit: row.rawMaterial.unit,
         quantity: row.quantity,
       }))

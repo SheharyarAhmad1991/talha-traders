@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { localizeText } from "@/lib/i18n/localize";
 
 type LogRow = {
   id: string;
@@ -45,7 +46,7 @@ type LogRow = {
 };
 
 export function StatementClient() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [type, setType] = useState("ALL");
@@ -108,20 +109,27 @@ export function StatementClient() {
   function getDetails(r: LogRow) {
     if (r.type === "PURCHASE") {
       return [
-        r.dealerName,
-        r.rawMaterialName,
-        r.sendTo ? `${t("sendTo")} ${r.sendTo}` : null,
-        r.workerName ? `(${r.workerName})` : null,
+        localizeText(r.dealerName, language),
+        localizeText(r.rawMaterialName, language),
+        r.sendTo
+          ? `${t("sendTo")} ${localizeText(r.sendTo, language)}`
+          : null,
+        r.workerName ? `(${localizeText(r.workerName, language)})` : null,
       ]
         .filter(Boolean)
         .join(" · ");
     }
     if (r.type === "ISSUE") {
-      return [r.workerName, r.rawMaterialName].filter(Boolean).join(" · ");
+      return [
+        localizeText(r.workerName, language),
+        localizeText(r.rawMaterialName, language),
+      ]
+        .filter(Boolean)
+        .join(" · ");
     }
     return [
-      r.workerName,
-      r.finishedProductName,
+      localizeText(r.workerName, language),
+      localizeText(r.finishedProductName, language),
       r.materialConsumed != null && r.materialConsumed > 0
         ? `${t("consumed")} ${r.materialConsumed}`
         : null,

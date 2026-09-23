@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/lib/i18n/language-context";
-import { localizedName } from "@/lib/i18n/localize";
+import { localizedName, localizeText } from "@/lib/i18n/localize";
 import { autoUrduUnit } from "@/lib/i18n/auto-urdu";
 
 type FactoryRow = {
@@ -238,11 +238,29 @@ export function DashboardHomeBody({
                       </TableCell>
                       <TableCell className="text-sm">
                         {log.type === "PURCHASE" &&
-                          `${log.dealerName} · ${log.rawMaterialName} · ${log.quantity}`}
+                          [
+                            localizeText(log.dealerName, language),
+                            localizeText(log.rawMaterialName, language),
+                            log.quantity,
+                          ]
+                            .filter((x) => x !== null && x !== "")
+                            .join(" · ")}
                         {log.type === "ISSUE" &&
-                          `${log.workerName} · ${log.rawMaterialName} · ${log.quantity}`}
+                          [
+                            localizeText(log.workerName, language),
+                            localizeText(log.rawMaterialName, language),
+                            log.quantity,
+                          ]
+                            .filter((x) => x !== null && x !== "")
+                            .join(" · ")}
                         {log.type === "RECEIVE" &&
-                          `${log.workerName} · ${log.finishedProductName} · ${log.quantity}`}
+                          [
+                            localizeText(log.workerName, language),
+                            localizeText(log.finishedProductName, language),
+                            log.quantity,
+                          ]
+                            .filter((x) => x !== null && x !== "")
+                            .join(" · ")}
                       </TableCell>
                     </TableRow>
                   ))

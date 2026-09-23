@@ -3,16 +3,34 @@
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { localizedName, localizeText } from "@/lib/i18n/localize";
+import { autoUrduUnit } from "@/lib/i18n/auto-urdu";
 
 type BalanceRow = {
   rawMaterialId?: string;
   materialName: string;
+  materialNameUr?: string | null;
   unit: string;
   quantity: number;
 };
 
+function materialLabel(
+  row: BalanceRow,
+  language: "en" | "ur"
+) {
+  return localizedName(
+    { name: row.materialName, nameUr: row.materialNameUr },
+    language
+  );
+}
+
+function unitLabel(unit: string, language: "en" | "ur") {
+  if (language !== "ur") return unit;
+  return autoUrduUnit(unit) || localizeText(unit, language);
+}
+
 export function WorkerPendingBalance({ workerId }: { workerId?: string }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [balances, setBalances] = useState<BalanceRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -79,7 +97,8 @@ export function WorkerPendingBalance({ workerId }: { workerId?: string }) {
               key={`${b.rawMaterialId || b.materialName}-${b.unit}`}
               variant="secondary"
             >
-              {b.materialName}: {b.quantity} {b.unit}
+              {materialLabel(b, language)}: {b.quantity}{" "}
+              {unitLabel(b.unit, language)}
             </Badge>
           ))}
         </div>
@@ -89,7 +108,7 @@ export function WorkerPendingBalance({ workerId }: { workerId?: string }) {
 }
 
 export function FactoryStockPanel() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [stocks, setStocks] = useState<BalanceRow[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -122,7 +141,9 @@ export function FactoryStockPanel() {
         <p className="text-sm text-muted-foreground">{t("loadingFactoryStock")}</p>
       )}
       {!loading && stocks.length === 0 && (
-        <p className="text-sm text-muted-foreground">{t("noFactoryStockAvailable")}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("noFactoryStockAvailable")}
+        </p>
       )}
       {!loading && stocks.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -131,7 +152,8 @@ export function FactoryStockPanel() {
               key={`${b.rawMaterialId || b.materialName}-${b.unit}`}
               variant="outline"
             >
-              {b.materialName}: {b.quantity} {b.unit}
+              {materialLabel(b, language)}: {b.quantity}{" "}
+              {unitLabel(b.unit, language)}
             </Badge>
           ))}
         </div>
