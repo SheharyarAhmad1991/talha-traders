@@ -193,7 +193,7 @@ export function CrudSection({
                 {fields.map((f) => (
                   <TableHead key={f.key}>{f.label}</TableHead>
                 ))}
-                <TableHead className="w-28 text-right">{t("actions")}</TableHead>
+                <TableHead className="w-28 text-end">{t("actions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -212,7 +212,7 @@ export function CrudSection({
                     {fields.map((f) => (
                       <TableCell key={f.key}>{cellValue(item, f.key)}</TableCell>
                     ))}
-                    <TableCell className="text-right">
+                    <TableCell className="text-end">
                       <div className="flex justify-end gap-1">
                         <Button
                           type="button"

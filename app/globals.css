@@ -153,4 +153,14 @@
     font-weight: 600;
     line-height: 1.5;
   }
+
+  /* Tables: keep headers and cells aligned in RTL (use logical start/end) */
+  html[lang="ur"] table {
+    direction: rtl;
+  }
+
+  html[lang="ur"] th.text-end,
+  html[lang="ur"] td.text-end {
+    text-align: end;
+  }
 }

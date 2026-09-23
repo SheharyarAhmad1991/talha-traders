@@ -329,7 +329,7 @@ export function StatementClient() {
                   <TableHead>{t("qty")}</TableHead>
                   <TableHead>{t("payment")}</TableHead>
                   <TableHead>{t("notes")}</TableHead>
-                  <TableHead className="w-28 text-right">{t("actions")}</TableHead>
+                  <TableHead className="w-28 text-end">{t("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -359,7 +359,7 @@ export function StatementClient() {
                       <TableCell className="max-w-[160px] truncate text-sm text-muted-foreground">
                         {r.notes || "—"}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-end">
                         <div className="flex justify-end gap-1">
                           <Link href={`/dashboard/records/${r.id}/edit`}>
                             <Button

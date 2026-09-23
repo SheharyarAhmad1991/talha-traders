@@ -110,7 +110,7 @@ export function DashboardHomeBody({
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("material")}</TableHead>
-                    <TableHead className="text-right">{t("quantity")}</TableHead>
+                    <TableHead className="text-end">{t("quantity")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -129,7 +129,7 @@ export function DashboardHomeBody({
                         <TableCell>
                           {localizedName(row.rawMaterial, language)}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-end tabular-nums">
                           {row.quantity}{" "}
                           {language === "ur"
                             ? autoUrduUnit(row.rawMaterial.unit) ||
@@ -157,7 +157,7 @@ export function DashboardHomeBody({
                   <TableRow>
                     <TableHead>{t("worker")}</TableHead>
                     <TableHead>{t("material")}</TableHead>
-                    <TableHead className="text-right">{t("qty")}</TableHead>
+                    <TableHead className="text-end">{t("qty")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -179,7 +179,7 @@ export function DashboardHomeBody({
                         <TableCell>
                           {localizedName(row.rawMaterial, language)}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="text-end tabular-nums">
                           {row.quantity}{" "}
                           {language === "ur"
                             ? autoUrduUnit(row.rawMaterial.unit) ||
