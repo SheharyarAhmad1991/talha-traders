@@ -90,13 +90,12 @@ function NavLinks({
     }
     if (href === pathname && !pendingHref) {
       event.preventDefault();
-      router.refresh();
       onNavigate?.();
       return;
     }
+    // Prefetch immediately on click (in case hover never happened)
+    router.prefetch(href);
     markPending(href);
-    // Pull fresh server data for the next page (new materials, stock, etc.)
-    router.refresh();
     onNavigate?.();
   }
 

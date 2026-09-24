@@ -8,6 +8,7 @@ import {
   NavigationProvider,
   NavPendingBar,
 } from "@/components/layout/navigation";
+import { RouteWarmer } from "@/components/layout/route-warmer";
 import {
   DATA_CHANGED_EVENT,
   MASTER_CHANGED_EVENT,
@@ -45,6 +46,7 @@ export function DashboardShell({
 }) {
   return (
     <NavigationProvider>
+      <RouteWarmer />
       <div className="flex h-screen overflow-hidden bg-background">
         <DesktopSidebar />
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
