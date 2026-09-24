@@ -14,11 +14,14 @@ import {
 } from "@/components/ui/dialog";
 import { useLanguage } from "@/lib/i18n/language-context";
 
+const MAX_FILES = 5;
+
 type ImageUploadProps = {
   id?: string;
   label?: string;
-  value: File | null;
-  onChange: (file: File | null) => void;
+  value: File[];
+  onChange: (files: File[]) => void;
+  maxFiles?: number;
 };
 
 export function ImageUpload({
@@ -26,27 +29,55 @@ export function ImageUpload({
   label,
   value,
   onChange,
+  maxFiles = MAX_FILES,
 }: ImageUploadProps) {
   const { t } = useLanguage();
   const displayLabel = label ?? t("imageUpload");
   const galleryRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [previews, setPreviews] = useState<string[]>([]);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [startingCamera, setStartingCamera] = useState(false);
 
-  function applyFile(file: File | null) {
-    setPreview((prev) => {
-      if (prev) URL.revokeObjectURL(prev);
-      return file ? URL.createObjectURL(file) : null;
+  useEffect(() => {
+    const urls = value.map((file) => URL.createObjectURL(file));
+    setPreviews((prev) => {
+      prev.forEach((u) => URL.revokeObjectURL(u));
+      return urls;
     });
-    onChange(file);
+    return () => {
+      urls.forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [value]);
+
+  function addFiles(incoming: File[]) {
+    if (!incoming.length) return;
+    const room = maxFiles - value.length;
+    if (room <= 0) {
+      toast.error(t("maxImagesReached"));
+      return;
+    }
+    const next = [...value, ...incoming.slice(0, room)];
+    if (incoming.length > room) {
+      toast.message(t("maxImagesReached"));
+    }
+    onChange(next);
+  }
+
+  function removeAt(index: number) {
+    onChange(value.filter((_, i) => i !== index));
+  }
+
+  function clearAll() {
+    onChange([]);
   }
 
   function onGalleryChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0] || null;
-    applyFile(file);
+    const files = Array.from(e.target.files || []).filter((f) =>
+      f.type.startsWith("image/")
+    );
+    addFiles(files);
     e.target.value = "";
   }
 
@@ -89,7 +120,6 @@ export function ImageUpload({
 
   useEffect(() => {
     if (!cameraOpen) return;
-    // Wait a tick so the <video> exists inside the dialog
     const timer = window.setTimeout(() => {
       void startStream();
     }, 50);
@@ -107,6 +137,11 @@ export function ImageUpload({
   }, []);
 
   function capturePhoto() {
+    if (value.length >= maxFiles) {
+      toast.error(t("maxImagesReached"));
+      closeCamera();
+      return;
+    }
     const video = videoRef.current;
     if (!video || !video.videoWidth) {
       toast.error(t("failedToSave"));
@@ -127,24 +162,32 @@ export function ImageUpload({
         const file = new File([blob], `camera-${Date.now()}.jpg`, {
           type: "image/jpeg",
         });
-        applyFile(file);
-        closeCamera();
+        addFiles([file]);
         toast.success(t("capture"));
+        // Keep camera open so more photos can be taken
       },
       "image/jpeg",
-      0.92
+      0.85
     );
   }
 
+  const canAdd = value.length < maxFiles;
+
   return (
     <div className="space-y-2">
-      <Label>{displayLabel}</Label>
+      <Label>
+        {displayLabel}{" "}
+        <span className="font-normal text-muted-foreground">
+          ({value.length}/{maxFiles})
+        </span>
+      </Label>
 
       <input
         ref={galleryRef}
         id={`${id}-gallery`}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={onGalleryChange}
       />
@@ -153,34 +196,56 @@ export function ImageUpload({
         <Button
           type="button"
           variant="outline"
+          disabled={!canAdd}
           onClick={() => galleryRef.current?.click()}
         >
           <ImageIcon data-icon="inline-start" />
           {t("gallery")}
         </Button>
-        <Button type="button" variant="outline" onClick={() => setCameraOpen(true)}>
+        <Button
+          type="button"
+          variant="outline"
+          disabled={!canAdd}
+          onClick={() => setCameraOpen(true)}
+        >
           <Camera data-icon="inline-start" />
           {t("camera")}
         </Button>
-        {value && (
-          <Button type="button" variant="ghost" onClick={() => applyFile(null)}>
+        {value.length > 0 && (
+          <Button type="button" variant="ghost" onClick={clearAll}>
             <X data-icon="inline-start" />
             {t("remove")}
           </Button>
         )}
       </div>
 
-      {value && (
-        <p className="truncate text-xs text-muted-foreground">{value.name}</p>
-      )}
-
-      {preview && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={preview}
-          alt="Selected upload preview"
-          className="mt-1 max-h-40 rounded-lg border object-contain"
-        />
+      {value.length > 0 && (
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+          {value.map((file, index) => (
+            <div
+              key={`${file.name}-${file.size}-${index}`}
+              className="relative overflow-hidden rounded-lg border bg-muted/20"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previews[index]}
+                alt={file.name}
+                className="h-28 w-full object-cover"
+              />
+              <button
+                type="button"
+                className="absolute right-1 top-1 rounded-full bg-background/90 p-1 shadow"
+                onClick={() => removeAt(index)}
+                aria-label={t("remove")}
+              >
+                <X className="size-3.5" />
+              </button>
+              <p className="truncate px-1.5 py-1 text-[10px] text-muted-foreground">
+                {file.name}
+              </p>
+            </div>
+          ))}
+        </div>
       )}
 
       <Dialog
@@ -192,7 +257,9 @@ export function ImageUpload({
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>{t("takePhoto")}</DialogTitle>
+            <DialogTitle>
+              {t("takePhoto")} ({value.length}/{maxFiles})
+            </DialogTitle>
           </DialogHeader>
           <div className="overflow-hidden rounded-lg border bg-black">
             {startingCamera && (
@@ -210,12 +277,12 @@ export function ImageUpload({
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={closeCamera}>
-              {t("cancel")}
+              {t("done")}
             </Button>
             <Button
               type="button"
               onClick={capturePhoto}
-              disabled={startingCamera}
+              disabled={startingCamera || !canAdd}
             >
               <Camera data-icon="inline-start" />
               {t("capture")}

@@ -71,12 +71,17 @@ export function StatementClient() {
       if (startDate) params.set("startDate", startDate);
       if (endDate) params.set("endDate", endDate);
       params.set("type", type);
-      const res = await fetch(`/api/statement?${params.toString()}`);
+      params.set("_", String(Date.now()));
+      const res = await fetch(`/api/statement?${params.toString()}`, {
+        cache: "no-store",
+        credentials: "same-origin",
+      });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || t("failedToLoad"));
-      setRows(data);
+      setRows(Array.isArray(data) ? data : []);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("failedToLoad"));
+      setRows([]);
     } finally {
       setLoading(false);
     }
@@ -161,7 +166,6 @@ export function StatementClient() {
       t("amountPaid"),
       t("mazdooriPaid"),
       t("sendTo"),
-      t("notes"),
     ];
     const lines = rows.map((r) =>
       [
@@ -176,7 +180,6 @@ export function StatementClient() {
         r.amountPaid ?? "",
         r.mazdooriPaid ?? "",
         r.sendTo || "",
-        (r.notes || "").replace(/,/g, ";"),
       ].join(",")
     );
     const blob = new Blob([[headers.join(","), ...lines].join("\n")], {
@@ -231,7 +234,6 @@ export function StatementClient() {
             t("details"),
             t("qty"),
             t("payment"),
-            t("notes"),
           ],
         ],
         body: rows.map((r) => [
@@ -240,13 +242,11 @@ export function StatementClient() {
           getDetails(r),
           r.quantity ?? "—",
           String(getPayment(r)),
-          r.notes || "—",
         ]),
         styles: { fontSize: 8, cellPadding: 2 },
         headStyles: { fillColor: [30, 30, 30] },
         columnStyles: {
-          2: { cellWidth: 80 },
-          5: { cellWidth: 45 },
+          2: { cellWidth: 100 },
         },
       });
 
@@ -328,7 +328,6 @@ export function StatementClient() {
                   <TableHead>{t("details")}</TableHead>
                   <TableHead>{t("qty")}</TableHead>
                   <TableHead>{t("payment")}</TableHead>
-                  <TableHead>{t("notes")}</TableHead>
                   <TableHead className="w-28 text-end">{t("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -336,7 +335,7 @@ export function StatementClient() {
                 {rows.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={7}
+                      colSpan={6}
                       className="py-8 text-center text-muted-foreground"
                     >
                       {t("noRecords")}
@@ -356,9 +355,6 @@ export function StatementClient() {
                       </TableCell>
                       <TableCell>{r.quantity ?? "—"}</TableCell>
                       <TableCell>{getPayment(r)}</TableCell>
-                      <TableCell className="max-w-[160px] truncate text-sm text-muted-foreground">
-                        {r.notes || "—"}
-                      </TableCell>
                       <TableCell className="text-end">
                         <div className="flex justify-end gap-1">
                           <Link href={`/dashboard/records/${r.id}/edit`}>

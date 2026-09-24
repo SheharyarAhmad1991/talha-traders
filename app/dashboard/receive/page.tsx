@@ -1,12 +1,16 @@
-import { prisma } from "@/lib/prisma";
+import {
+  getCachedMaterials,
+  getCachedProducts,
+  getCachedWorkers,
+} from "@/lib/cached-data";
 import { ReceiveForm } from "@/components/forms/receive-form";
 import { PageHeader } from "@/components/i18n/page-header";
 
 export default async function ReceivePage() {
   const [workers, products, materials] = await Promise.all([
-    prisma.worker.findMany({ orderBy: { name: "asc" } }),
-    prisma.finishedProduct.findMany({ orderBy: { name: "asc" } }),
-    prisma.rawMaterial.findMany({ orderBy: { name: "asc" } }),
+    getCachedWorkers(),
+    getCachedProducts(),
+    getCachedMaterials(),
   ]);
 
   return (

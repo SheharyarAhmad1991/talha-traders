@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -22,9 +22,10 @@ import {
   SheetTrigger,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { useState } from "react";
+import { useState, type MouseEvent } from "react";
 import { toast } from "sonner";
 import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
+import { useNavigation } from "@/components/layout/navigation";
 
 const navItems: {
   href: string;
@@ -76,29 +77,51 @@ function NavLinks({
   onNavigate?: () => void;
   onLogout: () => void;
 }) {
-  const pathname = usePathname();
+  const router = useRouter();
   const { t } = useLanguage();
+  const { pathname, pendingHref, isPending, isActive, markPending } =
+    useNavigation();
 
-  const isActive = (href: string) => {
-    if (href === "/dashboard") return pathname === "/dashboard";
-    return pathname.startsWith(href);
-  };
+  function handleClick(event: MouseEvent<HTMLAnchorElement>, href: string) {
+    // Instant active highlight; block spam-clicks while a transition is pending
+    if (pendingHref && pendingHref !== href) {
+      event.preventDefault();
+      return;
+    }
+    if (href === pathname && !pendingHref) {
+      event.preventDefault();
+      router.refresh();
+      onNavigate?.();
+      return;
+    }
+    markPending(href);
+    // Pull fresh server data for the next page (new materials, stock, etc.)
+    router.refresh();
+    onNavigate?.();
+  }
 
   return (
-    <nav className="flex flex-col gap-1">
+    <nav className="flex flex-col gap-1" aria-busy={isPending}>
       {navItems.map((item) => {
         const Icon = item.icon;
         const active = isActive(item.href);
+        const isThisPending = pendingHref === item.href;
         return (
           <Link
             key={item.href}
             href={item.href}
-            onClick={onNavigate}
+            // Prefetch only on hover — prefetching every link on mount saturates the DB pool
+            prefetch={false}
+            onMouseEnter={() => router.prefetch(item.href)}
+            onFocus={() => router.prefetch(item.href)}
+            onClick={(e) => handleClick(e, item.href)}
+            aria-current={active ? "page" : undefined}
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               active
                 ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
+                : "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
+              isPending && !isThisPending && "pointer-events-none opacity-50"
             )}
           >
             <Icon className="size-4 shrink-0" />
@@ -108,6 +131,7 @@ function NavLinks({
       })}
       <Button
         variant="ghost"
+        disabled={isPending}
         className="w-full justify-start gap-3 px-3 text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
         onClick={onLogout}
       >
@@ -139,6 +163,7 @@ export function DesktopSidebar() {
       <div className="sticky top-0 z-10 flex h-14 shrink-0 items-center border-b border-sidebar-border bg-sidebar px-4">
         <Link
           href="/dashboard"
+          prefetch={false}
           className="font-heading text-lg font-semibold tracking-tight"
         >
           Umer Traders

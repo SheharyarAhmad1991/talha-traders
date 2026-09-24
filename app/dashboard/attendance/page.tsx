@@ -1,10 +1,7 @@
-import { prisma } from "@/lib/prisma";
+import { getCachedHrFactories } from "@/lib/cached-data";
 import { AttendanceClient } from "@/components/hr/attendance-client";
 
 export default async function AttendancePage() {
-  const factories = await prisma.hRFactory.findMany({
-    orderBy: { name: "asc" },
-  });
-
+  const factories = await getCachedHrFactories();
   return <AttendanceClient factories={factories} />;
 }

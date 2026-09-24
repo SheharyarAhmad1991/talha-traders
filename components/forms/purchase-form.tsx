@@ -4,11 +4,10 @@ import { useMemo, useState } from "react";
 import { useForm, Controller, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import { purchaseSchema } from "@/lib/validations";
-import { fileToBase64, todayInputValue } from "@/lib/utils-form";
+import { filesToImageData, todayInputValue } from "@/lib/utils-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,20 +24,39 @@ import {
 } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { optionLabel } from "@/lib/i18n/localize";
+import { useFreshList, notifyDataChanged } from "@/lib/use-fresh-list";
 
 type Option = { id: string; name: string; nameUr?: string | null; unit?: string };
 type FormValues = z.infer<typeof purchaseSchema>;
 
+const emptyPurchaseValues = (): FormValues => ({
+  date: todayInputValue(),
+  dealerId: "",
+  sendTo: "FACTORY",
+  workerId: "",
+  notes: "",
+  lines: [
+    {
+      rawMaterialId: "",
+      quantity: undefined as unknown as number,
+      amountPaid: undefined as unknown as number,
+    },
+  ],
+});
+
 export function PurchaseForm({
-  dealers,
-  materials,
-  workers,
+  dealers: initialDealers,
+  materials: initialMaterials,
+  workers: initialWorkers,
 }: {
   dealers: Option[];
   materials: Option[];
   workers: Option[];
 }) {
   const { t, language } = useLanguage();
+  const dealers = useFreshList<Option>("/api/dealers", initialDealers);
+  const materials = useFreshList<Option>("/api/materials", initialMaterials);
+  const workers = useFreshList<Option>("/api/workers", initialWorkers);
   const sendToOptions = useMemo(
     () => [
       { value: "FACTORY", label: t("factory") },
@@ -46,9 +64,8 @@ export function PurchaseForm({
     ],
     [t]
   );
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const dealerOptions = useMemo(
     () =>
@@ -79,17 +96,11 @@ export function PurchaseForm({
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(purchaseSchema),
-    defaultValues: {
-      date: todayInputValue(),
-      dealerId: "",
-      sendTo: "FACTORY",
-      workerId: "",
-      notes: "",
-      lines: [{ rawMaterialId: "", quantity: undefined as unknown as number, amountPaid: undefined as unknown as number }],
-    },
+    defaultValues: emptyPurchaseValues(),
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -103,7 +114,7 @@ export function PurchaseForm({
   async function onSubmit(values: FormValues) {
     setLoading(true);
     try {
-      const imageData = await fileToBase64(imageFile);
+      const imageData = await filesToImageData(imageFiles);
       const res = await fetch("/api/purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,8 +125,15 @@ export function PurchaseForm({
       toast.success(
         `${t("purchaseRecorded")} (${data.count || values.lines.length} ${t("itemsCount")})`
       );
-      router.push("/dashboard");
-      router.refresh();
+      reset(emptyPurchaseValues());
+      setImageFiles([]);
+      try {
+        sessionStorage.removeItem("umer:dashboard:v1");
+        sessionStorage.setItem("umer:dash:force", "1");
+      } catch {
+        /* ignore */
+      }
+      notifyDataChanged();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("failedToSave"));
     } finally {
@@ -303,7 +321,7 @@ export function PurchaseForm({
             )}
           />
 
-          <ImageUpload value={imageFile} onChange={setImageFile} />
+          <ImageUpload value={imageFiles} onChange={setImageFiles} />
 
           <Button type="submit" disabled={loading}>
             {loading ? t("saving") : t("savePurchase")}

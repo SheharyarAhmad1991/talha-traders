@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { hrFactorySchema } from "@/lib/validations";
+import { CACHE_TAGS, invalidateMasterTag } from "@/lib/cached-data";
 
 async function requireAuth() {
   const session = await getSession();
@@ -32,6 +33,7 @@ export async function PUT(
       nameUr: parsed.data.nameUr?.trim() || null,
     },
   });
+  await invalidateMasterTag(CACHE_TAGS.hrFactories);
   return NextResponse.json(factory);
 }
 
@@ -44,5 +46,6 @@ export async function DELETE(
   }
   const { id } = await params;
   await prisma.hRFactory.delete({ where: { id } });
+  await invalidateMasterTag(CACHE_TAGS.hrFactories);
   return NextResponse.json({ ok: true });
 }

@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { localizedName } from "@/lib/i18n/localize";
+import { notifyMasterDataChanged } from "@/lib/use-fresh-list";
 
 type CrudItem = {
   id: string;
@@ -143,6 +144,7 @@ export function CrudSection({
 
       setOpen(false);
       await reloadItems();
+      notifyMasterDataChanged();
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("requestFailed"));
@@ -160,6 +162,7 @@ export function CrudSection({
       setItems((prev) => prev.filter((i) => i.id !== id));
       toast.success(t("deletedSuccess"));
       await reloadItems();
+      notifyMasterDataChanged();
       router.refresh();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("failedToDelete"));

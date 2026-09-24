@@ -1,8 +1,11 @@
-import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { statementFilterSchema } from "@/lib/validations";
+import { jsonNoStore } from "@/lib/json-no-store";
+import { NextResponse } from "next/server";
 import type { Prisma, TransactionType } from "@prisma/client";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   if (!(await getSession())) {
@@ -37,10 +40,28 @@ export async function GET(request: Request) {
     }
   }
 
+  // Never select imageData — base64 photos make this API take 30s+ and hang the UI
   const logs = await prisma.transactionLog.findMany({
     where,
     orderBy: [{ date: "desc" }, { createdAt: "desc" }],
+    take: 500,
+    select: {
+      id: true,
+      type: true,
+      date: true,
+      dealerName: true,
+      workerName: true,
+      rawMaterialName: true,
+      finishedProductName: true,
+      quantity: true,
+      materialConsumed: true,
+      amountPaid: true,
+      mazdooriPaid: true,
+      sendTo: true,
+      notes: true,
+      batchId: true,
+    },
   });
 
-  return NextResponse.json(logs);
+  return jsonNoStore(logs);
 }

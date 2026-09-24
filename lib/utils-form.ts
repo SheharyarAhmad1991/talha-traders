@@ -11,6 +11,19 @@ export async function fileToBase64(file: File | null | undefined) {
   });
 }
 
+/** Encode 1+ images for storage. One image = string; many = JSON array string. */
+export async function filesToImageData(files: File[]) {
+  if (!files.length) return undefined;
+  const encoded: string[] = [];
+  for (const file of files) {
+    const data = await fileToBase64(file);
+    if (data) encoded.push(data);
+  }
+  if (!encoded.length) return undefined;
+  if (encoded.length === 1) return encoded[0];
+  return JSON.stringify(encoded);
+}
+
 export function todayInputValue() {
   return new Date().toISOString().slice(0, 10);
 }

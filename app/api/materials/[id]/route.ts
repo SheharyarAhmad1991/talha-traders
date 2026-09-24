@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { rawMaterialSchema } from "@/lib/validations";
+import { CACHE_TAGS, invalidateMasterTag } from "@/lib/cached-data";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -26,6 +27,7 @@ export async function PUT(request: Request, { params }: Params) {
       unit: parsed.data.unit.trim(),
     },
   });
+  await invalidateMasterTag(CACHE_TAGS.materials);
   return NextResponse.json(material);
 }
 
@@ -35,5 +37,6 @@ export async function DELETE(_request: Request, { params }: Params) {
   }
   const { id } = await params;
   await prisma.rawMaterial.delete({ where: { id } });
+  await invalidateMasterTag(CACHE_TAGS.materials);
   return NextResponse.json({ ok: true });
 }

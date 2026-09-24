@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { workerSchema } from "@/lib/validations";
+import { CACHE_TAGS, invalidateMasterTag } from "@/lib/cached-data";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -26,6 +27,7 @@ export async function PUT(request: Request, { params }: Params) {
       phone: parsed.data.phone?.trim() || null,
     },
   });
+  await invalidateMasterTag(CACHE_TAGS.workers);
   return NextResponse.json(worker);
 }
 
@@ -35,5 +37,6 @@ export async function DELETE(_request: Request, { params }: Params) {
   }
   const { id } = await params;
   await prisma.worker.delete({ where: { id } });
+  await invalidateMasterTag(CACHE_TAGS.workers);
   return NextResponse.json({ ok: true });
 }

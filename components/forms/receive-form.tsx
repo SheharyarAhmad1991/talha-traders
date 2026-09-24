@@ -4,11 +4,10 @@ import { useMemo, useState } from "react";
 import { useForm, Controller, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import { receiveSchema } from "@/lib/validations";
-import { fileToBase64, todayInputValue } from "@/lib/utils-form";
+import { filesToImageData, todayInputValue } from "@/lib/utils-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,23 +24,45 @@ import {
 } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { optionLabel } from "@/lib/i18n/localize";
+import { useFreshList, notifyDataChanged } from "@/lib/use-fresh-list";
 
 type Option = { id: string; name: string; nameUr?: string | null; unit?: string };
 type FormValues = z.infer<typeof receiveSchema>;
 
+const emptyReceiveValues = (): FormValues => ({
+  date: todayInputValue(),
+  workerId: "",
+  mazdooriPaid: undefined as unknown as number,
+  notes: "",
+  products: [
+    {
+      finishedProductId: "",
+      quantity: undefined as unknown as number,
+    },
+  ],
+  materialsConsumed: [
+    {
+      rawMaterialId: "",
+      quantity: undefined as unknown as number,
+    },
+  ],
+});
+
 export function ReceiveForm({
-  workers,
-  products,
-  materials,
+  workers: initialWorkers,
+  products: initialProducts,
+  materials: initialMaterials,
 }: {
   workers: Option[];
   products: Option[];
   materials: Option[];
 }) {
   const { t, language } = useLanguage();
-  const router = useRouter();
+  const workers = useFreshList<Option>("/api/workers", initialWorkers);
+  const products = useFreshList<Option>("/api/products", initialProducts);
+  const materials = useFreshList<Option>("/api/materials", initialMaterials);
   const [loading, setLoading] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const workerOptions = useMemo(
     () =>
@@ -72,27 +93,11 @@ export function ReceiveForm({
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(receiveSchema),
-    defaultValues: {
-      date: todayInputValue(),
-      workerId: "",
-      mazdooriPaid: undefined as unknown as number,
-      notes: "",
-      products: [
-        {
-          finishedProductId: "",
-          quantity: undefined as unknown as number,
-        },
-      ],
-      materialsConsumed: [
-        {
-          rawMaterialId: "",
-          quantity: undefined as unknown as number,
-        },
-      ],
-    },
+    defaultValues: emptyReceiveValues(),
   });
 
   const productFields = useFieldArray({ control, name: "products" });
@@ -103,7 +108,7 @@ export function ReceiveForm({
   async function onSubmit(values: FormValues) {
     setLoading(true);
     try {
-      const imageData = await fileToBase64(imageFile);
+      const imageData = await filesToImageData(imageFiles);
       const res = await fetch("/api/receive", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -114,8 +119,15 @@ export function ReceiveForm({
       toast.success(
         `${t("productsReceived")} (${data.count || values.products.length} ${t("itemsCount")})`
       );
-      router.push("/dashboard");
-      router.refresh();
+      reset(emptyReceiveValues());
+      setImageFiles([]);
+      try {
+        sessionStorage.removeItem("umer:dashboard:v1");
+        sessionStorage.setItem("umer:dash:force", "1");
+      } catch {
+        /* ignore */
+      }
+      notifyDataChanged();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("failedToSave"));
     } finally {
@@ -311,7 +323,7 @@ export function ReceiveForm({
             )}
           />
 
-          <ImageUpload value={imageFile} onChange={setImageFile} />
+          <ImageUpload value={imageFiles} onChange={setImageFiles} />
 
           <Button type="submit" disabled={loading}>
             {loading ? t("saving") : t("receiveProduct")}

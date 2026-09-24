@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { receiveSchema } from "@/lib/validations";
+import { invalidateDashboardCache } from "@/lib/dashboard-data";
 
 export async function POST(request: Request) {
   if (!(await getSession())) {
@@ -140,6 +141,7 @@ export async function POST(request: Request) {
       return created;
     });
 
+    await invalidateDashboardCache();
     return NextResponse.json({ count: logs.length, logs, batchId }, { status: 201 });
   } catch (error) {
     console.error(error);

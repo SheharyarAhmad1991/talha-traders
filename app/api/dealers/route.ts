@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { dealerSchema } from "@/lib/validations";
+import { CACHE_TAGS, invalidateMasterTag } from "@/lib/cached-data";
+import { jsonNoStore } from "@/lib/json-no-store";
 
 async function requireAuth() {
   const session = await getSession();
@@ -14,7 +16,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const dealers = await prisma.dealer.findMany({ orderBy: { name: "asc" } });
-  return NextResponse.json(dealers);
+  return jsonNoStore(dealers);
 }
 
 export async function POST(request: Request) {
@@ -36,5 +38,6 @@ export async function POST(request: Request) {
       phone: parsed.data.phone?.trim() || null,
     },
   });
+  await invalidateMasterTag(CACHE_TAGS.dealers);
   return NextResponse.json(dealer, { status: 201 });
 }

@@ -1,12 +1,16 @@
-import { prisma } from "@/lib/prisma";
+import {
+  getCachedDealers,
+  getCachedMaterials,
+  getCachedWorkers,
+} from "@/lib/cached-data";
 import { PurchaseForm } from "@/components/forms/purchase-form";
 import { PageHeader } from "@/components/i18n/page-header";
 
 export default async function PurchasePage() {
   const [dealers, materials, workers] = await Promise.all([
-    prisma.dealer.findMany({ orderBy: { name: "asc" } }),
-    prisma.rawMaterial.findMany({ orderBy: { name: "asc" } }),
-    prisma.worker.findMany({ orderBy: { name: "asc" } }),
+    getCachedDealers(),
+    getCachedMaterials(),
+    getCachedWorkers(),
   ]);
 
   return (

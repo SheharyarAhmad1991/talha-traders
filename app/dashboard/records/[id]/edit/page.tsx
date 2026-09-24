@@ -1,5 +1,11 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import {
+  getCachedDealers,
+  getCachedMaterials,
+  getCachedProducts,
+  getCachedWorkers,
+} from "@/lib/cached-data";
 import { EditTransactionForm } from "@/components/forms/edit-transaction-form";
 
 type Props = { params: Promise<{ id: string }> };
@@ -10,10 +16,10 @@ export default async function EditTransactionPage({ params }: Props) {
   if (!log) notFound();
 
   const [dealers, workers, materials, products] = await Promise.all([
-    prisma.dealer.findMany({ orderBy: { name: "asc" } }),
-    prisma.worker.findMany({ orderBy: { name: "asc" } }),
-    prisma.rawMaterial.findMany({ orderBy: { name: "asc" } }),
-    prisma.finishedProduct.findMany({ orderBy: { name: "asc" } }),
+    getCachedDealers(),
+    getCachedWorkers(),
+    getCachedMaterials(),
+    getCachedProducts(),
   ]);
 
   return (

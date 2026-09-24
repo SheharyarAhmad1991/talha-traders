@@ -4,11 +4,10 @@ import { useMemo, useState } from "react";
 import { useForm, Controller, useFieldArray, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import { issueSchema } from "@/lib/validations";
-import { fileToBase64, todayInputValue } from "@/lib/utils-form";
+import { filesToImageData, todayInputValue } from "@/lib/utils-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,13 +27,21 @@ import {
 } from "@/components/forms/balance-panels";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { optionLabel } from "@/lib/i18n/localize";
+import { useFreshList, notifyDataChanged } from "@/lib/use-fresh-list";
 
 type Option = { id: string; name: string; nameUr?: string | null; unit?: string };
 type FormValues = z.infer<typeof issueSchema>;
 
+const emptyIssueValues = (): FormValues => ({
+  date: todayInputValue(),
+  workerId: "",
+  notes: "",
+  lines: [{ rawMaterialId: "", quantity: undefined as unknown as number }],
+});
+
 export function IssueForm({
-  workers,
-  materials,
+  workers: initialWorkers,
+  materials: initialMaterials,
   initialFactoryStock,
 }: {
   workers: Option[];
@@ -48,9 +55,10 @@ export function IssueForm({
   }[];
 }) {
   const { t, language } = useLanguage();
-  const router = useRouter();
+  const workers = useFreshList<Option>("/api/workers", initialWorkers);
+  const materials = useFreshList<Option>("/api/materials", initialMaterials);
   const [loading, setLoading] = useState(false);
-  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
 
   const workerOptions = useMemo(
     () =>
@@ -73,15 +81,11 @@ export function IssueForm({
     register,
     handleSubmit,
     control,
+    reset,
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(issueSchema),
-    defaultValues: {
-      date: todayInputValue(),
-      workerId: "",
-      notes: "",
-      lines: [{ rawMaterialId: "", quantity: undefined as unknown as number }],
-    },
+    defaultValues: emptyIssueValues(),
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -94,7 +98,7 @@ export function IssueForm({
   async function onSubmit(values: FormValues) {
     setLoading(true);
     try {
-      const imageData = await fileToBase64(imageFile);
+      const imageData = await filesToImageData(imageFiles);
       const res = await fetch("/api/issue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -105,8 +109,15 @@ export function IssueForm({
       toast.success(
         `${t("materialIssued")} (${data.count || values.lines.length} ${t("itemsCount")})`
       );
-      router.push("/dashboard");
-      router.refresh();
+      reset(emptyIssueValues());
+      setImageFiles([]);
+      try {
+        sessionStorage.removeItem("umer:dashboard:v1");
+        sessionStorage.setItem("umer:dash:force", "1");
+      } catch {
+        /* ignore */
+      }
+      notifyDataChanged();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("failedToSave"));
     } finally {
@@ -228,7 +239,7 @@ export function IssueForm({
             )}
           />
 
-          <ImageUpload value={imageFile} onChange={setImageFile} />
+          <ImageUpload value={imageFiles} onChange={setImageFiles} />
 
           <Button type="submit" disabled={loading}>
             {loading ? t("saving") : t("issueMaterial")}

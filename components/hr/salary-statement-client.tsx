@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { localizedName } from "@/lib/i18n/localize";
+import { useFreshList } from "@/lib/use-fresh-list";
 
 type Factory = { id: string; name: string; nameUr?: string | null };
 type SalaryRow = {
@@ -39,11 +40,12 @@ type SalaryRow = {
 };
 
 export function SalaryStatementClient({
-  factories,
+  factories: initialFactories,
 }: {
   factories: Factory[];
 }) {
   const { t, language } = useLanguage();
+  const factories = useFreshList<Factory>("/api/hr/factories", initialFactories);
   const [startDate, setStartDate] = useState(todayInputValue());
   const [endDate, setEndDate] = useState(todayInputValue());
   const [factoryId, setFactoryId] = useState("");

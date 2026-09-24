@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { rawMaterialSchema } from "@/lib/validations";
+import { CACHE_TAGS, invalidateMasterTag } from "@/lib/cached-data";
+import { jsonNoStore } from "@/lib/json-no-store";
 
 export async function GET() {
   if (!(await getSession())) {
@@ -10,7 +12,7 @@ export async function GET() {
   const materials = await prisma.rawMaterial.findMany({
     orderBy: { name: "asc" },
   });
-  return NextResponse.json(materials);
+  return jsonNoStore(materials);
 }
 
 export async function POST(request: Request) {
@@ -35,5 +37,6 @@ export async function POST(request: Request) {
   await prisma.factoryInventory.create({
     data: { rawMaterialId: material.id, quantity: 0 },
   });
+  await invalidateMasterTag(CACHE_TAGS.materials);
   return NextResponse.json(material, { status: 201 });
 }

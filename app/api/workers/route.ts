@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { workerSchema } from "@/lib/validations";
+import { CACHE_TAGS, invalidateMasterTag } from "@/lib/cached-data";
+import { jsonNoStore } from "@/lib/json-no-store";
 
 export async function GET() {
   if (!(await getSession())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const workers = await prisma.worker.findMany({ orderBy: { name: "asc" } });
-  return NextResponse.json(workers);
+  return jsonNoStore(workers);
 }
 
 export async function POST(request: Request) {
@@ -30,5 +32,6 @@ export async function POST(request: Request) {
       phone: parsed.data.phone?.trim() || null,
     },
   });
+  await invalidateMasterTag(CACHE_TAGS.workers);
   return NextResponse.json(worker, { status: 201 });
 }

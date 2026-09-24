@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { hrFactorySchema } from "@/lib/validations";
+import { CACHE_TAGS, invalidateMasterTag } from "@/lib/cached-data";
+import { jsonNoStore } from "@/lib/json-no-store";
 
 async function requireAuth() {
   const session = await getSession();
@@ -16,7 +18,7 @@ export async function GET() {
   const factories = await prisma.hRFactory.findMany({
     orderBy: { name: "asc" },
   });
-  return NextResponse.json(factories);
+  return jsonNoStore(factories);
 }
 
 export async function POST(request: Request) {
@@ -37,5 +39,6 @@ export async function POST(request: Request) {
       nameUr: parsed.data.nameUr?.trim() || null,
     },
   });
+  await invalidateMasterTag(CACHE_TAGS.hrFactories);
   return NextResponse.json(factory, { status: 201 });
 }

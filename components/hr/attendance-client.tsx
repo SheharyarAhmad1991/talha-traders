@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { localizedName } from "@/lib/i18n/localize";
+import { useFreshList } from "@/lib/use-fresh-list";
 
 type Factory = { id: string; name: string; nameUr?: string | null };
 type AttendanceRow = {
@@ -35,8 +36,13 @@ type AttendanceRow = {
   bonusAmount: number;
 };
 
-export function AttendanceClient({ factories }: { factories: Factory[] }) {
+export function AttendanceClient({
+  factories: initialFactories,
+}: {
+  factories: Factory[];
+}) {
   const { t, language } = useLanguage();
+  const factories = useFreshList<Factory>("/api/hr/factories", initialFactories);
   const [date, setDate] = useState(todayInputValue());
   const [factoryId, setFactoryId] = useState("");
   const [rows, setRows] = useState<AttendanceRow[]>([]);

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { jsonNoStore } from "@/lib/json-no-store";
 
 export async function GET(request: Request) {
   if (!(await getSession())) {
@@ -16,7 +17,7 @@ export async function GET(request: Request) {
       include: { rawMaterial: true },
       orderBy: { quantity: "desc" },
     });
-    return NextResponse.json(
+    return jsonNoStore(
       inventory
         .filter((row) => Number(row.quantity) > 0)
         .map((row) => ({
@@ -35,7 +36,7 @@ export async function GET(request: Request) {
     orderBy: { rawMaterial: { name: "asc" } },
   });
 
-  return NextResponse.json(
+  return jsonNoStore(
     factory
       .filter((row) => Number(row.quantity) > 0)
       .map((row) => ({

@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/card";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { localizedName } from "@/lib/i18n/localize";
+import { notifyMasterDataChanged } from "@/lib/use-fresh-list";
 
 type Factory = { id: string; name: string; nameUr?: string | null };
 type Employee = {
@@ -160,6 +161,7 @@ export function HrEmployeesSection({
       toast.success(editing ? "Employee updated" : "Employee added");
       setOpen(false);
       await reload();
+      notifyMasterDataChanged();
       router.refresh();
     } catch (err) {
       setFormError(err instanceof Error ? err.message : "Failed to save");
@@ -180,6 +182,7 @@ export function HrEmployeesSection({
     }
     toast.success("Employee deleted");
     await reload();
+    notifyMasterDataChanged();
     router.refresh();
   }
 

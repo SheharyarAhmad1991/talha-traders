@@ -139,6 +139,8 @@
   "remove": "Remove",
   "takePhoto": "Take Photo",
   "startingCamera": "Starting camera…",
+  "maxImagesReached": "You can upload up to 5 images.",
+  "done": "Done",
   "capture": "Capture",
   "notes": "Notes",
   "stop": "Stop",
