@@ -79,8 +79,8 @@ export function DashboardHomeBody({
     [factoryStock]
   );
 
-  function openDeduct(materialId?: string) {
-    setDeductMaterialId(materialId ?? null);
+  function openDeduct(materialId: string) {
+    setDeductMaterialId(materialId);
     setDeductOpen(true);
   }
 
@@ -125,21 +125,9 @@ export function DashboardHomeBody({
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between">
-            <div className="space-y-1">
-              <CardTitle>{t("factoryInventory")}</CardTitle>
-              <CardDescription>{t("currentStockAtFactory")}</CardDescription>
-            </div>
-            <Button
-              type="button"
-              size="default"
-              disabled={deductMaterials.length === 0}
-              onClick={() => openDeduct()}
-              className="w-full shrink-0 sm:w-auto"
-            >
-              <Minus data-icon="inline-start" />
-              {t("deductFromFactory")}
-            </Button>
+          <CardHeader>
+            <CardTitle>{t("factoryInventory")}</CardTitle>
+            <CardDescription>{t("currentStockAtFactory")}</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto rounded-lg border">

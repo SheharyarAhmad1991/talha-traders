@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { AppSelect } from "@/components/ui/app-select";
 import {
   Dialog,
   DialogContent,
@@ -40,55 +39,35 @@ export function FactoryDeductDialog({
 }) {
   const { t, language } = useLanguage();
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
-  const [rawMaterialId, setRawMaterialId] = useState("");
   const [quantity, setQuantity] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const withStock = useMemo(
-    () => materials.filter((m) => Number(m.quantity) > 0),
-    [materials]
-  );
-
-  const materialOptions = useMemo(
+  const selected = useMemo(
     () =>
-      withStock.map((m) => ({
-        value: m.rawMaterialId,
-        label: `${localizedName(
-          { name: m.name, nameUr: m.nameUr },
-          language
-        )} (${m.quantity} ${m.unit})`,
-      })),
-    [withStock, language]
+      materials.find((m) => m.rawMaterialId === initialMaterialId) ?? null,
+    [materials, initialMaterialId]
   );
-
-  const selected = withStock.find((m) => m.rawMaterialId === rawMaterialId);
 
   useEffect(() => {
     if (!open) return;
     setDate(format(new Date(), "yyyy-MM-dd"));
     setQuantity("");
     setNotes("");
-    const preferred =
-      initialMaterialId &&
-      withStock.some((m) => m.rawMaterialId === initialMaterialId)
-        ? initialMaterialId
-        : withStock[0]?.rawMaterialId || "";
-    setRawMaterialId(preferred);
-  }, [open, initialMaterialId, withStock]);
+  }, [open, initialMaterialId]);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const qty = Number(quantity);
-    if (!rawMaterialId) {
+    if (!selected) {
       toast.error(t("selectMaterial"));
       return;
     }
+    const qty = Number(quantity);
     if (Number.isNaN(qty) || qty <= 0) {
       toast.error(t("quantityMustBePositive"));
       return;
     }
-    if (selected && qty > selected.quantity) {
+    if (qty > selected.quantity) {
       toast.error(
         t("insufficientFactoryStock").replace(
           "{available}",
@@ -105,7 +84,7 @@ export function FactoryDeductDialog({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           date,
-          rawMaterialId,
+          rawMaterialId: selected.rawMaterialId,
           quantity: qty,
           notes: notes.trim() || undefined,
         }),
@@ -121,6 +100,13 @@ export function FactoryDeductDialog({
       setLoading(false);
     }
   }
+
+  const materialLabel = selected
+    ? localizedName(
+        { name: selected.name, nameUr: selected.nameUr },
+        language
+      )
+    : "—";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -142,12 +128,9 @@ export function FactoryDeductDialog({
           </div>
           <div className="space-y-2">
             <Label>{t("material")}</Label>
-            <AppSelect
-              value={rawMaterialId}
-              onValueChange={setRawMaterialId}
-              options={materialOptions}
-              placeholder={t("selectMaterial")}
-            />
+            <p className="rounded-md border bg-muted/40 px-3 py-2 text-sm font-medium">
+              {materialLabel}
+            </p>
             {selected ? (
               <p className="text-xs text-muted-foreground">
                 {t("available")}: {selected.quantity} {selected.unit}
@@ -184,7 +167,7 @@ export function FactoryDeductDialog({
             >
               {t("cancel")}
             </Button>
-            <Button type="submit" disabled={loading || withStock.length === 0}>
+            <Button type="submit" disabled={loading || !selected}>
               {loading ? t("saving") : t("deduct")}
             </Button>
           </DialogFooter>
