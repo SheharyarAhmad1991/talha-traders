@@ -165,7 +165,7 @@ export function DesktopSidebar() {
           prefetch={false}
           className="font-heading text-lg font-semibold tracking-tight"
         >
-          Umer Traders
+          Talha Traders
         </Link>
       </div>
       <div className="p-3">
@@ -201,7 +201,7 @@ export function MobileNav() {
         <SheetTitle className="sr-only">{t("navigation")}</SheetTitle>
         <div className="flex h-14 items-center border-b border-sidebar-border px-4">
           <span className="font-heading text-lg font-semibold">
-            Umer Traders
+            Talha Traders
           </span>
         </div>
         <div className="p-3">

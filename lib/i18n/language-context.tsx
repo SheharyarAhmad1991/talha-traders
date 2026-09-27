@@ -12,7 +12,7 @@ const dictionaries: Record<Language, Record<TranslationKey, string>> = {
   ur,
 };
 
-const STORAGE_KEY = "umer-traders-lang";
+const STORAGE_KEY = "talha-traders-lang";
 
 type LanguageContextValue = {
   language: Language;

@@ -57,7 +57,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="text-2xl">Umer Traders</CardTitle>
+        <CardTitle className="text-2xl">Talha Traders</CardTitle>
         <CardDescription>{t("loginDesc")}</CardDescription>
       </CardHeader>
       <CardContent>

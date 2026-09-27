@@ -1,4 +1,4 @@
-# Umer Traders
+# Talha Traders
 
 Admin dashboard for tracking raw material quantities and labor payments.
 
@@ -21,7 +21,7 @@ npm run dev
 ```
 
 3. Login:
-   - Email: `admin@umertraders.com`
+   - Email: `admin@talhatraders.com`
    - Password: `admin123`
 
 ## Vercel environment variables

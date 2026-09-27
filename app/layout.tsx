@@ -22,7 +22,7 @@ const notoSansArabic = Noto_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: "Umer Traders",
+  title: "Talha Traders",
   description: "Material inventory and payment logging dashboard",
 };
 

@@ -18,7 +18,7 @@ export function Header({ userName }: { userName: string }) {
       <div className="flex items-center gap-2">
         <MobileNav />
         <h1 className="font-heading text-base font-semibold tracking-tight md:hidden">
-          Umer Traders
+          Talha Traders
         </h1>
       </div>
 

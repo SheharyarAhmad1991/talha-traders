@@ -188,7 +188,7 @@ export function StatementClient() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `umer-traders-statement-${Date.now()}.csv`;
+    a.download = `talha-traders-statement-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success(t("csvDownloaded"));
@@ -210,7 +210,7 @@ export function StatementClient() {
         format: "a4",
       });
       doc.setFontSize(16);
-      doc.text("Umer Traders — Statement", 14, 16);
+      doc.text("Talha Traders — Statement", 14, 16);
       doc.setFontSize(10);
       doc.text(
         [
@@ -250,7 +250,7 @@ export function StatementClient() {
         },
       });
 
-      doc.save(`umer-traders-statement-${Date.now()}.pdf`);
+      doc.save(`talha-traders-statement-${Date.now()}.pdf`);
       toast.success(t("pdfDownloaded"));
     } catch (err) {
       console.error(err);

@@ -6,7 +6,7 @@ const COOKIE_NAME = "umer_session";
 
 function getSecret() {
   return new TextEncoder().encode(
-    process.env.AUTH_SECRET || "umer-traders-dev-secret-change-in-production"
+    process.env.AUTH_SECRET || "talha-traders-dev-secret-change-in-production"
   );
 }
 
