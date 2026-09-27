@@ -3,7 +3,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 
-const COOKIE_NAME = "umer_session";
+const COOKIE_NAME = "talha_session";
 
 function getSecret() {
   const secret = process.env.AUTH_SECRET;

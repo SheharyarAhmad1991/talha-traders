@@ -112,8 +112,8 @@ export function IssueForm({
       reset(emptyIssueValues());
       setImageFiles([]);
       try {
-        sessionStorage.removeItem("umer:dashboard:v1");
-        sessionStorage.setItem("umer:dash:force", "1");
+        sessionStorage.removeItem("talha:dashboard:v1");
+        sessionStorage.setItem("talha:dash:force", "1");
       } catch {
         /* ignore */
       }

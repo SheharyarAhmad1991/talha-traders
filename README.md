@@ -45,7 +45,7 @@ npm run db:seed
 
 1. Dashboard Home
 2. Purchase Material
-3. Issue to Worker
+3. Issue to Moulder
 4. Receive Product
 5. Download Statement
 6. Settings

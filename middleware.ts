@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const COOKIE_NAME = "umer_session";
+const COOKIE_NAME = "talha_session";
 
 function getSecret() {
   return new TextEncoder().encode(

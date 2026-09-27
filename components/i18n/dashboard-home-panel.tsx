@@ -31,9 +31,9 @@ export function DashboardHomePanel() {
     async (force = false) => {
       let useForce = force;
       try {
-        if (sessionStorage.getItem("umer:dash:force") === "1") {
+        if (sessionStorage.getItem("talha:dash:force") === "1") {
           useForce = true;
-          sessionStorage.removeItem("umer:dash:force");
+          sessionStorage.removeItem("talha:dash:force");
         }
       } catch {
         /* ignore */

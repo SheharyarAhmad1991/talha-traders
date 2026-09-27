@@ -3,15 +3,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
-export const MASTER_CHANGED_EVENT = "umer:master-changed";
-export const DATA_CHANGED_EVENT = "umer:data-changed";
+export const MASTER_CHANGED_EVENT = "talha:master-changed";
+export const DATA_CHANGED_EVENT = "talha:data-changed";
 
 const FRESH_TTL_MS = 15_000;
 
 /** Call after Settings create/update/delete so form dropdowns reload. */
 export function notifyMasterDataChanged() {
   try {
-    sessionStorage.setItem("umer:master:rev", String(Date.now()));
+    sessionStorage.setItem("talha:master:rev", String(Date.now()));
     window.dispatchEvent(new Event(MASTER_CHANGED_EVENT));
     // Rare path — also refresh pages that show stock counts after material add
     window.dispatchEvent(new Event(DATA_CHANGED_EVENT));
@@ -23,8 +23,8 @@ export function notifyMasterDataChanged() {
 /** Call after purchase / issue / receive so live stock panels update. */
 export function notifyDataChanged() {
   try {
-    sessionStorage.setItem("umer:dash:force", "1");
-    sessionStorage.removeItem("umer:dashboard:v1");
+    sessionStorage.setItem("talha:dash:force", "1");
+    sessionStorage.removeItem("talha:dashboard:v1");
     window.dispatchEvent(new Event(DATA_CHANGED_EVENT));
   } catch {
     /* ignore */
