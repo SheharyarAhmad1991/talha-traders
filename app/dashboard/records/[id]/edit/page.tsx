@@ -33,6 +33,8 @@ export default async function EditTransactionPage({ params }: Props) {
     },
   });
   if (!log) notFound();
+  // Deduct records are deleted from statement only (no edit form)
+  if (log.type === "DEDUCT") notFound();
 
   const [dealers, workers, materials, products] = await Promise.all([
     getCachedDealers(),
@@ -54,6 +56,7 @@ export default async function EditTransactionPage({ params }: Props) {
       <EditTransactionForm
         log={{
           ...log,
+          type: log.type as "PURCHASE" | "ISSUE" | "RECEIVE",
           date: log.date.toISOString(),
           extra: log.extra as {
             materialsConsumed?: { rawMaterialId: string; quantity: number }[];
