@@ -86,6 +86,30 @@ export function DashboardHomeBody({
 
   return (
     <>
+      {/* Clear deduct action — top of dashboard, hard to miss */}
+      <div className="flex flex-col gap-3 rounded-xl border-2 border-primary/40 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <p className="font-heading text-base font-semibold">
+            {t("deductFromFactory")}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {deductMaterials.length === 0
+              ? t("noStockToDeduct")
+              : t("deductMaterialDesc")}
+          </p>
+        </div>
+        <Button
+          type="button"
+          size="lg"
+          className="w-full shrink-0 sm:w-auto"
+          disabled={deductMaterials.length === 0}
+          onClick={() => openDeduct()}
+        >
+          <Minus data-icon="inline-start" />
+          {t("deductFromFactory")}
+        </Button>
+      </div>
+
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
@@ -125,20 +149,20 @@ export function DashboardHomeBody({
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+          <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-start sm:justify-between">
             <div className="space-y-1">
               <CardTitle>{t("factoryInventory")}</CardTitle>
               <CardDescription>{t("currentStockAtFactory")}</CardDescription>
             </div>
             <Button
               type="button"
-              size="sm"
-              variant="outline"
+              size="default"
               disabled={deductMaterials.length === 0}
               onClick={() => openDeduct()}
+              className="w-full shrink-0 sm:w-auto"
             >
               <Minus data-icon="inline-start" />
-              {t("deductMaterial")}
+              {t("deductFromFactory")}
             </Button>
           </CardHeader>
           <CardContent>
@@ -178,7 +202,7 @@ export function DashboardHomeBody({
                           <Button
                             type="button"
                             size="sm"
-                            variant="ghost"
+                            variant="secondary"
                             disabled={!(row.quantity > 0)}
                             onClick={() => openDeduct(row.rawMaterialId)}
                             aria-label={t("deduct")}
