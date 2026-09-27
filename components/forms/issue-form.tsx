@@ -212,6 +212,7 @@ export function IssueForm({
                   <Input
                     type="number"
                     step="any"
+                    min={0}
                     {...register(`lines.${index}.quantity`)}
                   />
                 </div>

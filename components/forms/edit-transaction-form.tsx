@@ -124,12 +124,42 @@ export function EditTransactionForm({
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    const qty = Number(quantity);
+    if (Number.isNaN(qty) || qty <= 0) {
+      toast.error(t("quantityMustBePositive"));
+      return;
+    }
+
+    if (log.type === "PURCHASE") {
+      const paid = Number(amountPaid);
+      if (Number.isNaN(paid) || paid < 0) {
+        toast.error(t("amountCannotBeNegative"));
+        return;
+      }
+    }
+
+    if (log.type === "RECEIVE" && isPrimaryReceive) {
+      const mazdoori = Number(mazdooriPaid || 0);
+      if (Number.isNaN(mazdoori) || mazdoori < 0) {
+        toast.error(t("mazdooriCannotBeNegative"));
+        return;
+      }
+      for (const m of materialsConsumed) {
+        const mq = Number(m.quantity);
+        if (Number.isNaN(mq) || mq <= 0) {
+          toast.error(t("quantityMustBePositive"));
+          return;
+        }
+      }
+    }
+
     setLoading(true);
     try {
       let body: Record<string, unknown> = {
         date,
         notes,
-        quantity: Number(quantity),
+        quantity: qty,
       };
 
       if (log.type === "PURCHASE") {
@@ -284,6 +314,7 @@ export function EditTransactionForm({
               <Input
                 type="number"
                 step="any"
+                min={0}
                 value={quantity}
                 onChange={(e) => setQuantity(e.target.value)}
                 required
@@ -296,6 +327,7 @@ export function EditTransactionForm({
                 <Input
                   type="number"
                   step="any"
+                  min={0}
                   value={amountPaid}
                   onChange={(e) => setAmountPaid(e.target.value)}
                   required
@@ -309,6 +341,7 @@ export function EditTransactionForm({
                 <Input
                   type="number"
                   step="any"
+                  min={0}
                   value={mazdooriPaid}
                   onChange={(e) => setMazdooriPaid(e.target.value)}
                 />
@@ -355,6 +388,7 @@ export function EditTransactionForm({
                   <Input
                     type="number"
                     step="any"
+                    min={0}
                     value={row.quantity}
                     onChange={(e) =>
                       setMaterialsConsumed((prev) =>

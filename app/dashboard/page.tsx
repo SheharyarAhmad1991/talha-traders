@@ -1,6 +1,5 @@
 import { Suspense } from "react";
-import { unstable_cache } from "next/cache";
-import { prisma } from "@/lib/prisma";
+import { getDashboardSnapshot } from "@/lib/dashboard-data";
 import { DashboardHomeChrome } from "@/components/i18n/dashboard-home-chrome";
 import { DashboardHomeBody } from "@/components/i18n/dashboard-home-body";
 
@@ -19,38 +18,8 @@ function DashboardBodySkeleton() {
   );
 }
 
-/** One connection at a time + short cache — avoids 60s pool waits */
-const getDashboardSnapshot = unstable_cache(
-  async () => {
-    const factoryStock = await prisma.factoryInventory.findMany({
-      include: { rawMaterial: true },
-      orderBy: { rawMaterial: { name: "asc" } },
-    });
-    const workerStock = await prisma.workerInventory.findMany({
-      where: { quantity: { gt: 0 } },
-      include: { worker: true, rawMaterial: true },
-      orderBy: { quantity: "desc" },
-      take: 10,
-    });
-    const recentLogs = await prisma.transactionLog.findMany({
-      orderBy: { createdAt: "desc" },
-      take: 8,
-    });
-    const dealerCount = await prisma.dealer.count();
-    const workerCount = await prisma.worker.count();
-    return {
-      factoryStock,
-      workerStock,
-      recentLogs,
-      dealerCount,
-      workerCount,
-    };
-  },
-  ["dashboard-home-snapshot"],
-  { revalidate: 20, tags: ["dashboard-home"] }
-);
-
 async function DashboardHomeData() {
+  // Single lean SQL snapshot — only fields the home UI renders (no imageData)
   const data = await getDashboardSnapshot();
   return (
     <DashboardHomeBody

@@ -98,7 +98,7 @@ export async function PUT(request: Request, { params }: Params) {
         );
       }
       if (sendTo === "WORKER" && !workerId) {
-        return NextResponse.json({ error: "Worker is required" }, { status: 400 });
+        return NextResponse.json({ error: "Moulder is required" }, { status: 400 });
       }
 
       const dealer = await prisma.dealer.findUnique({ where: { id: dealerId } });
@@ -112,7 +112,7 @@ export async function PUT(request: Request, { params }: Params) {
       if (workerId) {
         const worker = await prisma.worker.findUnique({ where: { id: workerId } });
         if (!worker) {
-          return NextResponse.json({ error: "Worker not found" }, { status: 404 });
+          return NextResponse.json({ error: "Moulder not found" }, { status: 404 });
         }
         workerName = worker.name;
       }
@@ -176,7 +176,7 @@ export async function PUT(request: Request, { params }: Params) {
         where: { id: rawMaterialId },
       });
       if (!worker || !material) {
-        return NextResponse.json({ error: "Worker or material not found" }, { status: 404 });
+        return NextResponse.json({ error: "Moulder or material not found" }, { status: 404 });
       }
 
       const updated = await prisma.$transaction(async (tx) => {
@@ -239,8 +239,30 @@ export async function PUT(request: Request, { params }: Params) {
           )
         : null;
 
-      if (!date || !workerId || !finishedProductId || !(quantity > 0)) {
-        return NextResponse.json({ error: "Invalid receive data" }, { status: 400 });
+      if (
+        !date ||
+        !workerId ||
+        !finishedProductId ||
+        !(quantity > 0) ||
+        Number.isNaN(mazdooriPaid) ||
+        mazdooriPaid < 0
+      ) {
+        return NextResponse.json(
+          { error: "Invalid receive data. Mazdoori cannot be negative." },
+          { status: 400 }
+        );
+      }
+
+      if (
+        materialsConsumed &&
+        materialsConsumed.some(
+          (m) => !m.rawMaterialId || Number.isNaN(m.quantity) || !(m.quantity > 0)
+        )
+      ) {
+        return NextResponse.json(
+          { error: "Material quantities must be greater than 0" },
+          { status: 400 }
+        );
       }
 
       const worker = await prisma.worker.findUnique({ where: { id: workerId } });
@@ -248,7 +270,7 @@ export async function PUT(request: Request, { params }: Params) {
         where: { id: finishedProductId },
       });
       if (!worker || !product) {
-        return NextResponse.json({ error: "Worker or product not found" }, { status: 404 });
+        return NextResponse.json({ error: "Moulder or product not found" }, { status: 404 });
       }
 
       const isPrimary = (existing.materialConsumed ?? 0) > 0;

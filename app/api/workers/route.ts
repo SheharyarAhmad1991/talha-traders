@@ -2,14 +2,21 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { workerSchema } from "@/lib/validations";
-import { CACHE_TAGS, invalidateMasterTag } from "@/lib/cached-data";
+import {
+  CACHE_TAGS,
+  invalidateMasterTag,
+  workerSelect,
+} from "@/lib/cached-data";
 import { jsonNoStore } from "@/lib/json-no-store";
 
 export async function GET() {
   if (!(await getSession())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const workers = await prisma.worker.findMany({ orderBy: { name: "asc" } });
+  const workers = await prisma.worker.findMany({
+    select: workerSelect,
+    orderBy: { name: "asc" },
+  });
   return jsonNoStore(workers);
 }
 

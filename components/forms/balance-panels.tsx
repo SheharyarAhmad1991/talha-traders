@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { localizedName, localizeText } from "@/lib/i18n/localize";
 import { autoUrduUnit } from "@/lib/i18n/auto-urdu";
+import { DATA_CHANGED_EVENT } from "@/lib/use-fresh-list";
 
 type BalanceRow = {
   rawMaterialId?: string;
@@ -14,10 +15,7 @@ type BalanceRow = {
   quantity: number;
 };
 
-function materialLabel(
-  row: BalanceRow,
-  language: "en" | "ur"
-) {
+function materialLabel(row: BalanceRow, language: "en" | "ur") {
   return localizedName(
     { name: row.materialName, nameUr: row.materialNameUr },
     language
@@ -35,11 +33,11 @@ export function WorkerPendingBalance({ workerId }: { workerId?: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const load = useCallback(() => {
     if (!workerId) {
       setBalances([]);
       setError(null);
-      return;
+      return () => {};
     }
 
     let cancelled = false;
@@ -70,6 +68,16 @@ export function WorkerPendingBalance({ workerId }: { workerId?: string }) {
       cancelled = true;
     };
   }, [workerId, t]);
+
+  useEffect(() => {
+    const cleanup = load();
+    const onData = () => load();
+    window.addEventListener(DATA_CHANGED_EVENT, onData);
+    return () => {
+      cleanup();
+      window.removeEventListener(DATA_CHANGED_EVENT, onData);
+    };
+  }, [load]);
 
   if (!workerId) return null;
 
@@ -116,14 +124,7 @@ export function FactoryStockPanel({
   const [stocks, setStocks] = useState<BalanceRow[]>(initialData || []);
   const [loading, setLoading] = useState(!initialData);
 
-  useEffect(() => {
-    // Already hydrated from the server — skip an extra round trip
-    if (initialData) {
-      setStocks(initialData);
-      setLoading(false);
-      return;
-    }
-
+  const load = useCallback(() => {
     let cancelled = false;
     setLoading(true);
     fetch("/api/inventory", { cache: "no-store", credentials: "same-origin" })
@@ -143,7 +144,22 @@ export function FactoryStockPanel({
     return () => {
       cancelled = true;
     };
-  }, [t, initialData]);
+  }, [t]);
+
+  useEffect(() => {
+    if (initialData) {
+      setStocks(initialData);
+      setLoading(false);
+      return;
+    }
+    return load();
+  }, [initialData, load]);
+
+  useEffect(() => {
+    const onData = () => load();
+    window.addEventListener(DATA_CHANGED_EVENT, onData);
+    return () => window.removeEventListener(DATA_CHANGED_EVENT, onData);
+  }, [load]);
 
   return (
     <div className="space-y-2 rounded-lg border bg-muted/30 p-3">

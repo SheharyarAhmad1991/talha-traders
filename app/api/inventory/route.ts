@@ -11,35 +11,25 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const workerId = searchParams.get("workerId");
 
+  const materialSelect = {
+    name: true,
+    nameUr: true,
+    unit: true,
+  } as const;
+
   if (workerId) {
     const inventory = await prisma.workerInventory.findMany({
-      where: { workerId },
-      include: { rawMaterial: true },
+      where: { workerId, quantity: { gt: 0 } },
+      select: {
+        id: true,
+        rawMaterialId: true,
+        quantity: true,
+        rawMaterial: { select: materialSelect },
+      },
       orderBy: { quantity: "desc" },
     });
     return jsonNoStore(
-      inventory
-        .filter((row) => Number(row.quantity) > 0)
-        .map((row) => ({
-          id: row.id,
-          rawMaterialId: row.rawMaterialId,
-          materialName: row.rawMaterial.name,
-          materialNameUr: row.rawMaterial.nameUr,
-          unit: row.rawMaterial.unit,
-          quantity: row.quantity,
-        }))
-    );
-  }
-
-  const factory = await prisma.factoryInventory.findMany({
-    include: { rawMaterial: true },
-    orderBy: { rawMaterial: { name: "asc" } },
-  });
-
-  return jsonNoStore(
-    factory
-      .filter((row) => Number(row.quantity) > 0)
-      .map((row) => ({
+      inventory.map((row) => ({
         id: row.id,
         rawMaterialId: row.rawMaterialId,
         materialName: row.rawMaterial.name,
@@ -47,5 +37,28 @@ export async function GET(request: Request) {
         unit: row.rawMaterial.unit,
         quantity: row.quantity,
       }))
+    );
+  }
+
+  const factory = await prisma.factoryInventory.findMany({
+    where: { quantity: { gt: 0 } },
+    select: {
+      id: true,
+      rawMaterialId: true,
+      quantity: true,
+      rawMaterial: { select: materialSelect },
+    },
+    orderBy: { rawMaterial: { name: "asc" } },
+  });
+
+  return jsonNoStore(
+    factory.map((row) => ({
+      id: row.id,
+      rawMaterialId: row.rawMaterialId,
+      materialName: row.rawMaterial.name,
+      materialNameUr: row.rawMaterial.nameUr,
+      unit: row.rawMaterial.unit,
+      quantity: row.quantity,
+    }))
   );
 }

@@ -20,7 +20,15 @@ export async function GET(request: Request) {
 
   const employees = await prisma.hREmployee.findMany({
     where: factoryId ? { factoryId } : undefined,
-    include: { factory: true },
+    select: {
+      id: true,
+      name: true,
+      nameUr: true,
+      factoryId: true,
+      salaryType: true,
+      salaryAmount: true,
+      factory: { select: { id: true, name: true, nameUr: true } },
+    },
     orderBy: { name: "asc" },
   });
   return jsonNoStore(employees);

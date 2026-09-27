@@ -54,7 +54,7 @@ export const purchaseSchema = z
     if (data.sendTo === "WORKER" && !data.workerId) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Worker is required when Send To is Worker",
+        message: "Moulder is required when Send To is Moulder",
         path: ["workerId"],
       });
     }
@@ -67,7 +67,7 @@ const issueLineSchema = z.object({
 
 export const issueSchema = z.object({
   date: z.string().min(1, "Date is required"),
-  workerId: z.string().min(1, "Worker is required"),
+  workerId: z.string().min(1, "Moulder is required"),
   notes: z.string().optional(),
   imageData: z.string().optional(),
   lines: z.array(issueLineSchema).min(1, "Add at least one material"),
@@ -85,7 +85,7 @@ const receiveMaterialLineSchema = z.object({
 
 export const receiveSchema = z.object({
   date: z.string().min(1, "Date is required"),
-  workerId: z.string().min(1, "Worker is required"),
+  workerId: z.string().min(1, "Moulder is required"),
   mazdooriPaid: z.coerce.number().min(0, "Mazdoori cannot be negative"),
   notes: z.string().optional(),
   imageData: z.string().optional(),

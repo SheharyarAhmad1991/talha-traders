@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { rawMaterialSchema } from "@/lib/validations";
-import { CACHE_TAGS, invalidateMasterTag } from "@/lib/cached-data";
+import {
+  CACHE_TAGS,
+  invalidateMasterTag,
+  materialSelect,
+} from "@/lib/cached-data";
 import { jsonNoStore } from "@/lib/json-no-store";
 
 export async function GET() {
@@ -10,6 +14,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const materials = await prisma.rawMaterial.findMany({
+    select: materialSelect,
     orderBy: { name: "asc" },
   });
   return jsonNoStore(materials);

@@ -41,8 +41,6 @@ type LogRow = {
   amountPaid: number | null;
   mazdooriPaid: number | null;
   sendTo: string | null;
-  notes: string | null;
-  batchId?: string | null;
 };
 
 export function StatementClient() {
@@ -117,7 +115,13 @@ export function StatementClient() {
         localizeText(r.dealerName, language),
         localizeText(r.rawMaterialName, language),
         r.sendTo
-          ? `${t("sendTo")} ${localizeText(r.sendTo, language)}`
+          ? `${t("sendTo")} ${
+              r.sendTo === "WORKER"
+                ? t("worker")
+                : r.sendTo === "FACTORY"
+                  ? t("factory")
+                  : localizeText(r.sendTo, language)
+            }`
           : null,
         r.workerName ? `(${localizeText(r.workerName, language)})` : null,
       ]
@@ -179,7 +183,11 @@ export function StatementClient() {
         r.materialConsumed ?? "",
         r.amountPaid ?? "",
         r.mazdooriPaid ?? "",
-        r.sendTo || "",
+        r.sendTo === "WORKER"
+          ? t("worker")
+          : r.sendTo === "FACTORY"
+            ? t("factory")
+            : r.sendTo || "",
       ].join(",")
     );
     const blob = new Blob([[headers.join(","), ...lines].join("\n")], {

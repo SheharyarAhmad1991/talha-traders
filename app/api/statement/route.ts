@@ -40,7 +40,7 @@ export async function GET(request: Request) {
     }
   }
 
-  // Never select imageData — base64 photos make this API take 30s+ and hang the UI
+  // Only columns used by statement table / CSV / PDF — never imageData
   const logs = await prisma.transactionLog.findMany({
     where,
     orderBy: [{ date: "desc" }, { createdAt: "desc" }],
@@ -58,8 +58,6 @@ export async function GET(request: Request) {
       amountPaid: true,
       mazdooriPaid: true,
       sendTo: true,
-      notes: true,
-      batchId: true,
     },
   });
 

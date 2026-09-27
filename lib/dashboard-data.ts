@@ -1,5 +1,4 @@
 import { prisma } from "@/lib/prisma";
-import { CACHE_KEYS, cacheDel, cacheGet, cacheSet } from "@/lib/app-cache";
 
 export type DashboardSnapshot = {
   factoryStock: {
@@ -186,19 +185,14 @@ async function loadDashboardFromDb(): Promise<DashboardSnapshot> {
   };
 }
 
+/** Always live from PostgreSQL — inventory changes frequently. */
 export async function getDashboardSnapshot(
-  opts?: { force?: boolean }
+  _opts?: { force?: boolean }
 ): Promise<DashboardSnapshot> {
-  if (!opts?.force) {
-    const cached = await cacheGet<DashboardSnapshot>(CACHE_KEYS.dashboard);
-    if (cached) return cached;
-  }
-
-  const data = await loadDashboardFromDb();
-  await cacheSet(CACHE_KEYS.dashboard, data, 60);
-  return data;
+  return loadDashboardFromDb();
 }
 
+/** Kept for call sites after purchase/issue/receive (no shared cache to clear). */
 export async function invalidateDashboardCache() {
-  await cacheDel(CACHE_KEYS.dashboard, CACHE_KEYS.factoryStock);
+  // Dashboard and factory stock always read from DB.
 }

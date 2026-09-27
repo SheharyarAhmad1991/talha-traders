@@ -31,6 +31,7 @@ export async function GET(request: Request) {
 
   const employees = await prisma.hREmployee.findMany({
     where: { factoryId },
+    select: { id: true, name: true, nameUr: true },
     orderBy: { name: "asc" },
   });
 
@@ -38,6 +39,11 @@ export async function GET(request: Request) {
     where: {
       date: dayDate(date),
       employeeId: { in: employees.map((e) => e.id) },
+    },
+    select: {
+      employeeId: true,
+      isPresent: true,
+      bonusAmount: true,
     },
   });
 
@@ -49,8 +55,6 @@ export async function GET(request: Request) {
       employeeId: employee.id,
       name: employee.name,
       nameUr: employee.nameUr,
-      salaryType: employee.salaryType,
-      salaryAmount: employee.salaryAmount,
       isPresent: existing?.isPresent ?? true,
       bonusAmount: existing?.bonusAmount ?? 0,
     };

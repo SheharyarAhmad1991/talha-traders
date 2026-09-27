@@ -179,6 +179,7 @@ export function ReceiveForm({
                 id="mazdooriPaid"
                 type="number"
                 step="any"
+                min={0}
                 {...register("mazdooriPaid")}
               />
               {errors.mazdooriPaid && (
@@ -234,6 +235,7 @@ export function ReceiveForm({
                   <Input
                     type="number"
                     step="any"
+                    min={0}
                     {...register(`products.${index}.quantity`)}
                   />
                 </div>
@@ -296,6 +298,7 @@ export function ReceiveForm({
                   <Input
                     type="number"
                     step="any"
+                    min={0}
                     {...register(`materialsConsumed.${index}.quantity`)}
                   />
                 </div>

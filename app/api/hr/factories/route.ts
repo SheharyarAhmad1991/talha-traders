@@ -16,6 +16,7 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const factories = await prisma.hRFactory.findMany({
+    select: { id: true, name: true, nameUr: true },
     orderBy: { name: "asc" },
   });
   return jsonNoStore(factories);

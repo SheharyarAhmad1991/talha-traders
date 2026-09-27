@@ -18,6 +18,51 @@ export const CACHE_TAGS = {
 
 const MASTER_TTL_SECONDS = 30;
 
+/** Dropdown / settings projections — never pull unused columns. */
+export const dealerSelect = {
+  id: true,
+  name: true,
+  nameUr: true,
+  phone: true,
+} as const;
+
+export const workerSelect = {
+  id: true,
+  name: true,
+  nameUr: true,
+  phone: true,
+} as const;
+
+export const materialSelect = {
+  id: true,
+  name: true,
+  nameUr: true,
+  unit: true,
+} as const;
+
+export const productSelect = {
+  id: true,
+  name: true,
+  nameUr: true,
+  unit: true,
+} as const;
+
+export const hrFactorySelect = {
+  id: true,
+  name: true,
+  nameUr: true,
+} as const;
+
+export const hrEmployeeSelect = {
+  id: true,
+  name: true,
+  nameUr: true,
+  factoryId: true,
+  salaryType: true,
+  salaryAmount: true,
+  factory: { select: { id: true, name: true, nameUr: true } },
+} as const;
+
 const TAG_TO_KEY: Record<string, string> = {
   [CACHE_TAGS.dealers]: CACHE_KEYS.dealers,
   [CACHE_TAGS.workers]: CACHE_KEYS.workers,
@@ -27,15 +72,11 @@ const TAG_TO_KEY: Record<string, string> = {
   [CACHE_TAGS.hrEmployees]: CACHE_KEYS.hrEmployees,
 };
 
-/** Bust Next data cache + memory/Redis after Settings create/update/delete */
+/** Bust Next data cache + memory after Settings create/update/delete */
 export async function invalidateMasterTag(tag: string) {
   revalidateTag(tag, { expire: 0 });
   const key = TAG_TO_KEY[tag];
   if (key) await cacheDel(key);
-  // Materials change also affects factory stock lines
-  if (tag === CACHE_TAGS.materials) {
-    await cacheDel(CACHE_KEYS.factoryStock, CACHE_KEYS.dashboard);
-  }
 }
 
 async function cachedList<T>(
@@ -51,38 +92,53 @@ async function cachedList<T>(
 
 export async function getCachedDealers() {
   return cachedList(CACHE_KEYS.dealers, () =>
-    prisma.dealer.findMany({ orderBy: { name: "asc" } })
+    prisma.dealer.findMany({
+      select: dealerSelect,
+      orderBy: { name: "asc" },
+    })
   );
 }
 
 export async function getCachedWorkers() {
   return cachedList(CACHE_KEYS.workers, () =>
-    prisma.worker.findMany({ orderBy: { name: "asc" } })
+    prisma.worker.findMany({
+      select: workerSelect,
+      orderBy: { name: "asc" },
+    })
   );
 }
 
 export async function getCachedMaterials() {
   return cachedList(CACHE_KEYS.materials, () =>
-    prisma.rawMaterial.findMany({ orderBy: { name: "asc" } })
+    prisma.rawMaterial.findMany({
+      select: materialSelect,
+      orderBy: { name: "asc" },
+    })
   );
 }
 
 export async function getCachedProducts() {
   return cachedList(CACHE_KEYS.products, () =>
-    prisma.finishedProduct.findMany({ orderBy: { name: "asc" } })
+    prisma.finishedProduct.findMany({
+      select: productSelect,
+      orderBy: { name: "asc" },
+    })
   );
 }
 
 export async function getCachedHrFactories() {
   return cachedList(CACHE_KEYS.hrFactories, () =>
-    prisma.hRFactory.findMany({ orderBy: { name: "asc" } })
+    prisma.hRFactory.findMany({
+      select: hrFactorySelect,
+      orderBy: { name: "asc" },
+    })
   );
 }
 
 export async function getCachedHrEmployees() {
   return cachedList(CACHE_KEYS.hrEmployees, () =>
     prisma.hREmployee.findMany({
-      include: { factory: true },
+      select: hrEmployeeSelect,
       orderBy: { name: "asc" },
     })
   );
@@ -96,30 +152,25 @@ export type FactoryStockRow = {
   quantity: number;
 };
 
+/** Only positive stock rows + material name/unit — no full material model. */
 export async function getCachedFactoryStockPositive(): Promise<
   FactoryStockRow[]
 > {
-  const hit = await cacheGet<FactoryStockRow[]>(CACHE_KEYS.factoryStock);
-  if (hit) return hit;
-
   const rows = await prisma.factoryInventory.findMany({
     where: { quantity: { gt: 0 } },
-    include: {
-      rawMaterial: {
-        select: { name: true, nameUr: true, unit: true },
-      },
+    select: {
+      rawMaterialId: true,
+      quantity: true,
+      rawMaterial: { select: { name: true, nameUr: true, unit: true } },
     },
     orderBy: { rawMaterial: { name: "asc" } },
   });
 
-  const mapped = rows.map((row) => ({
+  return rows.map((row) => ({
     rawMaterialId: row.rawMaterialId,
     materialName: row.rawMaterial.name,
     materialNameUr: row.rawMaterial.nameUr,
     unit: row.rawMaterial.unit,
     quantity: row.quantity,
   }));
-
-  await cacheSet(CACHE_KEYS.factoryStock, mapped, 45);
-  return mapped;
 }

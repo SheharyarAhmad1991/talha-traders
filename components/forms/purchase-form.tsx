@@ -273,6 +273,7 @@ export function PurchaseForm({
                   <Input
                     type="number"
                     step="any"
+                    min={0}
                     {...register(`lines.${index}.quantity`)}
                   />
                 </div>
@@ -281,6 +282,7 @@ export function PurchaseForm({
                   <Input
                     type="number"
                     step="any"
+                    min={0}
                     {...register(`lines.${index}.amountPaid`, {
                       valueAsNumber: true,
                     })}

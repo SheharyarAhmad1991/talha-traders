@@ -22,6 +22,7 @@ export async function POST(request: Request) {
     const data = parsed.data;
     const dealer = await prisma.dealer.findUnique({
       where: { id: data.dealerId },
+      select: { id: true, name: true },
     });
     if (!dealer) {
       return NextResponse.json({ error: "Dealer not found" }, { status: 404 });
@@ -31,9 +32,10 @@ export async function POST(request: Request) {
     if (data.sendTo === "WORKER") {
       const worker = await prisma.worker.findUnique({
         where: { id: data.workerId },
+        select: { id: true, name: true },
       });
       if (!worker) {
-        return NextResponse.json({ error: "Worker not found" }, { status: 404 });
+        return NextResponse.json({ error: "Moulder not found" }, { status: 404 });
       }
       workerName = worker.name;
     }
@@ -41,6 +43,7 @@ export async function POST(request: Request) {
     const materialIds = data.lines.map((l) => l.rawMaterialId);
     const materials = await prisma.rawMaterial.findMany({
       where: { id: { in: materialIds } },
+      select: { id: true, name: true },
     });
     if (materials.length !== new Set(materialIds).size) {
       return NextResponse.json(

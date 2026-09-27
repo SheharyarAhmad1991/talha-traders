@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { dealerSchema } from "@/lib/validations";
-import { CACHE_TAGS, invalidateMasterTag } from "@/lib/cached-data";
+import {
+  CACHE_TAGS,
+  dealerSelect,
+  invalidateMasterTag,
+} from "@/lib/cached-data";
 import { jsonNoStore } from "@/lib/json-no-store";
 
 async function requireAuth() {
@@ -15,7 +19,10 @@ export async function GET() {
   if (!(await requireAuth())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const dealers = await prisma.dealer.findMany({ orderBy: { name: "asc" } });
+  const dealers = await prisma.dealer.findMany({
+    select: dealerSelect,
+    orderBy: { name: "asc" },
+  });
   return jsonNoStore(dealers);
 }
 

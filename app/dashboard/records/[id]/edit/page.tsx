@@ -12,7 +12,26 @@ type Props = { params: Promise<{ id: string }> };
 
 export default async function EditTransactionPage({ params }: Props) {
   const { id } = await params;
-  const log = await prisma.transactionLog.findUnique({ where: { id } });
+  // Only fields the edit form needs — skip imageData / timestamps
+  const log = await prisma.transactionLog.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      type: true,
+      date: true,
+      dealerId: true,
+      workerId: true,
+      rawMaterialId: true,
+      finishedProductId: true,
+      quantity: true,
+      amountPaid: true,
+      mazdooriPaid: true,
+      materialConsumed: true,
+      sendTo: true,
+      notes: true,
+      extra: true,
+    },
+  });
   if (!log) notFound();
 
   const [dealers, workers, materials, products] = await Promise.all([

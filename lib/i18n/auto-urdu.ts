@@ -7,9 +7,10 @@ const WORD_MAP: Record<string, string> = {
   // factories / roles
   factory: "فیکٹری",
   dealer: "ڈیلر",
-  worker: "مزدور",
-  labor: "مزدور",
-  labour: "مزدور",
+  worker: "مولڈر",
+  moulder: "مولڈر",
+  labor: "مولڈر",
+  labour: "مولڈر",
   // materials (common factory slang)
   plastic: "پلاسٹک",
   dana: "دانہ",

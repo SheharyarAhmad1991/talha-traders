@@ -22,14 +22,16 @@ export async function POST(request: Request) {
     const data = parsed.data;
     const worker = await prisma.worker.findUnique({
       where: { id: data.workerId },
+      select: { id: true, name: true },
     });
     if (!worker) {
-      return NextResponse.json({ error: "Worker not found" }, { status: 404 });
+      return NextResponse.json({ error: "Moulder not found" }, { status: 404 });
     }
 
     const materialIds = data.lines.map((l) => l.rawMaterialId);
     const materials = await prisma.rawMaterial.findMany({
       where: { id: { in: materialIds } },
+      select: { id: true, name: true, unit: true },
     });
     if (materials.length !== new Set(materialIds).size) {
       return NextResponse.json(
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
       const material = materialMap.get(line.rawMaterialId)!;
       const factoryStock = await prisma.factoryInventory.findUnique({
         where: { rawMaterialId: line.rawMaterialId },
+        select: { quantity: true },
       });
       if (!factoryStock || factoryStock.quantity < line.quantity) {
         return NextResponse.json(
