@@ -40,6 +40,7 @@ export function FactoryDeductDialog({
   const { t, language } = useLanguage();
   const [date, setDate] = useState(format(new Date(), "yyyy-MM-dd"));
   const [quantity, setQuantity] = useState("");
+  const [price, setPrice] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -53,6 +54,7 @@ export function FactoryDeductDialog({
     if (!open) return;
     setDate(format(new Date(), "yyyy-MM-dd"));
     setQuantity("");
+    setPrice("");
     setNotes("");
   }, [open, initialMaterialId]);
 
@@ -76,6 +78,15 @@ export function FactoryDeductDialog({
       );
       return;
     }
+    const priceTrimmed = price.trim();
+    let amountPaid: number | undefined;
+    if (priceTrimmed !== "") {
+      amountPaid = Number(priceTrimmed);
+      if (Number.isNaN(amountPaid) || amountPaid < 0) {
+        toast.error(t("priceCannotBeNegative"));
+        return;
+      }
+    }
 
     setLoading(true);
     try {
@@ -86,6 +97,7 @@ export function FactoryDeductDialog({
           date,
           rawMaterialId: selected.rawMaterialId,
           quantity: qty,
+          amountPaid,
           notes: notes.trim() || undefined,
         }),
       });
@@ -147,6 +159,18 @@ export function FactoryDeductDialog({
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
               required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="deduct-price">{t("price")}</Label>
+            <Input
+              id="deduct-price"
+              type="number"
+              step="any"
+              min={0}
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              placeholder={t("priceOptional")}
             />
           </div>
           <div className="space-y-2">

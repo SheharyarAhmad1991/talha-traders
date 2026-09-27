@@ -109,6 +109,10 @@ export const factoryDeductSchema = z.object({
   date: z.string().min(1, "Date is required"),
   rawMaterialId: z.string().min(1, "Material is required"),
   quantity: z.coerce.number().positive("Quantity must be greater than 0"),
+  amountPaid: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? undefined : v),
+    z.coerce.number().min(0, "Price cannot be negative").optional()
+  ),
   notes: z.string().optional(),
 });
 

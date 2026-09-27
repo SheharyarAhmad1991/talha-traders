@@ -55,6 +55,7 @@ export async function POST(request: Request) {
           rawMaterialId: material.id,
           rawMaterialName: material.name,
           quantity: data.quantity,
+          amountPaid: data.amountPaid ?? null,
           notes: data.notes?.trim() || null,
         },
       });

@@ -173,6 +173,7 @@ export function StatementClient() {
   function getPayment(r: LogRow) {
     if (r.type === "PURCHASE") return r.amountPaid ?? "—";
     if (r.type === "RECEIVE") return r.mazdooriPaid ?? "—";
+    if (r.type === "DEDUCT") return r.amountPaid ?? "—";
     return "—";
   }
 
