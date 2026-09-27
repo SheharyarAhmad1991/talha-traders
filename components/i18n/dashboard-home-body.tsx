@@ -86,30 +86,6 @@ export function DashboardHomeBody({
 
   return (
     <>
-      {/* Clear deduct action — top of dashboard, hard to miss */}
-      <div className="flex flex-col gap-3 rounded-xl border-2 border-primary/40 bg-primary/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-1">
-          <p className="font-heading text-base font-semibold">
-            {t("deductFromFactory")}
-          </p>
-          <p className="text-sm text-muted-foreground">
-            {deductMaterials.length === 0
-              ? t("noStockToDeduct")
-              : t("deductMaterialDesc")}
-          </p>
-        </div>
-        <Button
-          type="button"
-          size="lg"
-          className="w-full shrink-0 sm:w-auto"
-          disabled={deductMaterials.length === 0}
-          onClick={() => openDeduct()}
-        >
-          <Minus data-icon="inline-start" />
-          {t("deductFromFactory")}
-        </Button>
-      </div>
-
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
