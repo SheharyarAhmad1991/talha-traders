@@ -30,7 +30,7 @@ import { localizeText } from "@/lib/i18n/localize";
 
 type LogRow = {
   id: string;
-  type: "PURCHASE" | "ISSUE" | "RECEIVE";
+  type: "PURCHASE" | "ISSUE" | "RECEIVE" | "DEDUCT";
   date: string;
   dealerName: string | null;
   workerName: string | null;
@@ -58,6 +58,7 @@ export function StatementClient() {
       { value: "PURCHASE", label: t("purchase") },
       { value: "ISSUE", label: t("issue") },
       { value: "RECEIVE", label: t("receive") },
+      { value: "DEDUCT", label: t("deduct") },
     ],
     [t]
   );
@@ -132,6 +133,14 @@ export function StatementClient() {
       return [
         localizeText(r.workerName, language),
         localizeText(r.rawMaterialName, language),
+      ]
+        .filter(Boolean)
+        .join(" · ");
+    }
+    if (r.type === "DEDUCT") {
+      return [
+        localizeText(r.rawMaterialName, language),
+        t("factory"),
       ]
         .filter(Boolean)
         .join(" · ");
@@ -356,7 +365,17 @@ export function StatementClient() {
                         {format(new Date(r.date), "dd MMM yyyy")}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{r.type}</Badge>
+                        <Badge variant="secondary">
+                          {r.type === "PURCHASE"
+                            ? t("purchase")
+                            : r.type === "ISSUE"
+                              ? t("issue")
+                              : r.type === "RECEIVE"
+                                ? t("receive")
+                                : r.type === "DEDUCT"
+                                  ? t("deduct")
+                                  : r.type}
+                        </Badge>
                       </TableCell>
                       <TableCell className="max-w-xs text-sm">
                         {getDetails(r)}
@@ -365,15 +384,17 @@ export function StatementClient() {
                       <TableCell>{getPayment(r)}</TableCell>
                       <TableCell className="text-end">
                         <div className="flex justify-end gap-1">
-                          <Link href={`/dashboard/records/${r.id}/edit`}>
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              aria-label={t("edit")}
-                            >
-                              <Pencil />
-                            </Button>
-                          </Link>
+                          {r.type !== "DEDUCT" ? (
+                            <Link href={`/dashboard/records/${r.id}/edit`}>
+                              <Button
+                                variant="ghost"
+                                size="icon-sm"
+                                aria-label={t("edit")}
+                              >
+                                <Pencil />
+                              </Button>
+                            </Link>
+                          ) : null}
                           <Button
                             variant="ghost"
                             size="icon-sm"

@@ -79,6 +79,7 @@ enum TransactionType {
   PURCHASE
   ISSUE
   RECEIVE
+  DEDUCT
 }
 
 enum SendTo {

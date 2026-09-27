@@ -1,7 +1,8 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { format } from "date-fns";
-import { Warehouse, Users } from "lucide-react";
+import { Warehouse, Users, Minus } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -18,12 +19,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/lib/i18n/language-context";
 import { localizedName, localizeText } from "@/lib/i18n/localize";
 import { autoUrduUnit } from "@/lib/i18n/auto-urdu";
+import { FactoryDeductDialog } from "@/components/forms/factory-deduct-dialog";
 
 type FactoryRow = {
   id: string;
+  rawMaterialId: string;
   quantity: number;
   rawMaterial: { name: string; nameUr?: string | null; unit: string };
 };
@@ -58,6 +62,27 @@ export function DashboardHomeBody({
   workerCount: number;
 }) {
   const { t, language } = useLanguage();
+  const [deductOpen, setDeductOpen] = useState(false);
+  const [deductMaterialId, setDeductMaterialId] = useState<string | null>(null);
+
+  const deductMaterials = useMemo(
+    () =>
+      factoryStock
+        .filter((row) => Number(row.quantity) > 0)
+        .map((row) => ({
+          rawMaterialId: row.rawMaterialId,
+          quantity: row.quantity,
+          name: row.rawMaterial.name,
+          nameUr: row.rawMaterial.nameUr,
+          unit: row.rawMaterial.unit,
+        })),
+    [factoryStock]
+  );
+
+  function openDeduct(materialId?: string) {
+    setDeductMaterialId(materialId ?? null);
+    setDeductOpen(true);
+  }
 
   return (
     <>
@@ -100,9 +125,21 @@ export function DashboardHomeBody({
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle>{t("factoryInventory")}</CardTitle>
-            <CardDescription>{t("currentStockAtFactory")}</CardDescription>
+          <CardHeader className="flex flex-row items-start justify-between gap-2 space-y-0">
+            <div className="space-y-1">
+              <CardTitle>{t("factoryInventory")}</CardTitle>
+              <CardDescription>{t("currentStockAtFactory")}</CardDescription>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={deductMaterials.length === 0}
+              onClick={() => openDeduct()}
+            >
+              <Minus data-icon="inline-start" />
+              {t("deductMaterial")}
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto rounded-lg border">
@@ -111,13 +148,14 @@ export function DashboardHomeBody({
                   <TableRow>
                     <TableHead>{t("material")}</TableHead>
                     <TableHead className="text-end">{t("quantity")}</TableHead>
+                    <TableHead className="text-end">{t("actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {factoryStock.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={2}
+                        colSpan={3}
                         className="py-6 text-center text-muted-foreground"
                       >
                         {t("noFactoryStock")}
@@ -135,6 +173,19 @@ export function DashboardHomeBody({
                             ? autoUrduUnit(row.rawMaterial.unit) ||
                               row.rawMaterial.unit
                             : row.rawMaterial.unit}
+                        </TableCell>
+                        <TableCell className="text-end">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            disabled={!(row.quantity > 0)}
+                            onClick={() => openDeduct(row.rawMaterialId)}
+                            aria-label={t("deduct")}
+                          >
+                            <Minus data-icon="inline-start" />
+                            {t("deduct")}
+                          </Button>
                         </TableCell>
                       </TableRow>
                     ))
@@ -209,13 +260,14 @@ export function DashboardHomeBody({
                   <TableHead>{t("date")}</TableHead>
                   <TableHead>{t("type")}</TableHead>
                   <TableHead>{t("summary")}</TableHead>
+                  <TableHead className="text-end">{t("qty")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {recentLogs.length === 0 ? (
                   <TableRow>
                     <TableCell
-                      colSpan={3}
+                      colSpan={4}
                       className="py-6 text-center text-muted-foreground"
                     >
                       {t("noTransactions")}
@@ -233,34 +285,25 @@ export function DashboardHomeBody({
                             ? t("purchase")
                             : log.type === "ISSUE"
                               ? t("issue")
-                              : t("receive")}
+                              : log.type === "RECEIVE"
+                                ? t("receive")
+                                : log.type === "DEDUCT"
+                                  ? t("deduct")
+                                  : localizeText(log.type, language)}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm">
-                        {log.type === "PURCHASE" &&
-                          [
-                            localizeText(log.dealerName, language),
-                            localizeText(log.rawMaterialName, language),
-                            log.quantity,
-                          ]
-                            .filter((x) => x !== null && x !== "")
-                            .join(" · ")}
-                        {log.type === "ISSUE" &&
-                          [
-                            localizeText(log.workerName, language),
-                            localizeText(log.rawMaterialName, language),
-                            log.quantity,
-                          ]
-                            .filter((x) => x !== null && x !== "")
-                            .join(" · ")}
-                        {log.type === "RECEIVE" &&
-                          [
-                            localizeText(log.workerName, language),
-                            localizeText(log.finishedProductName, language),
-                            log.quantity,
-                          ]
-                            .filter((x) => x !== null && x !== "")
-                            .join(" · ")}
+                      <TableCell>
+                        {[
+                          localizeText(log.dealerName, language),
+                          localizeText(log.workerName, language),
+                          localizeText(log.rawMaterialName, language),
+                          localizeText(log.finishedProductName, language),
+                        ]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </TableCell>
+                      <TableCell className="text-end tabular-nums">
+                        {log.quantity ?? "—"}
                       </TableCell>
                     </TableRow>
                   ))
@@ -270,6 +313,13 @@ export function DashboardHomeBody({
           </div>
         </CardContent>
       </Card>
+
+      <FactoryDeductDialog
+        open={deductOpen}
+        onOpenChange={setDeductOpen}
+        materials={deductMaterials}
+        initialMaterialId={deductMaterialId}
+      />
     </>
   );
 }

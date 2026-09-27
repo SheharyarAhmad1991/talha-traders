@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 export type DashboardSnapshot = {
   factoryStock: {
     id: string;
+    rawMaterialId: string;
     quantity: number;
     rawMaterial: { name: string; nameUr: string | null; unit: string };
   }[];
@@ -56,6 +57,7 @@ async function loadDashboardFromDb(): Promise<DashboardSnapshot> {
           json_agg(
             json_build_object(
               'id', sub.id,
+              'rawMaterialId', sub."rawMaterialId",
               'quantity', sub.quantity,
               'rawMaterial', sub.rm
             )
@@ -66,6 +68,7 @@ async function loadDashboardFromDb(): Promise<DashboardSnapshot> {
         FROM (
           SELECT
             fi.id,
+            fi."rawMaterialId",
             fi.quantity,
             json_build_object(
               'name', rm.name,

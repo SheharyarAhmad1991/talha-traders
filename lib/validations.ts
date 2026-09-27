@@ -100,7 +100,16 @@ export const receiveSchema = z.object({
 export const statementFilterSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  type: z.enum(["ALL", "PURCHASE", "ISSUE", "RECEIVE"]).default("ALL"),
+  type: z
+    .enum(["ALL", "PURCHASE", "ISSUE", "RECEIVE", "DEDUCT"])
+    .default("ALL"),
+});
+
+export const factoryDeductSchema = z.object({
+  date: z.string().min(1, "Date is required"),
+  rawMaterialId: z.string().min(1, "Material is required"),
+  quantity: z.coerce.number().positive("Quantity must be greater than 0"),
+  notes: z.string().optional(),
 });
 
 // --- HR & Payroll ---

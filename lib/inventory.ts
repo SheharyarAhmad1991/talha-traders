@@ -94,6 +94,13 @@ export async function reverseLogInventory(tx: Tx, log: TransactionLog) {
         log.materialConsumed!
       );
     }
+    return;
+  }
+
+  if (log.type === "DEDUCT") {
+    if (!log.rawMaterialId || log.quantity == null) return;
+    // Undo deduct = put stock back into factory
+    await ensureFactoryQty(tx, log.rawMaterialId, log.quantity);
   }
 }
 
