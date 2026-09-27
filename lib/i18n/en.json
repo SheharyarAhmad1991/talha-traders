@@ -180,7 +180,7 @@
   "deductMaterialDesc": "Remove material from factory stock (waste, damage, or correction).",
   "quantityToDeduct": "Quantity to deduct",
   "deductNotesPlaceholder": "Reason (optional)",
-  "deductSuccess": "Material deducted from factory",
+  "deductSuccess": "Material deducted and recorded in Statement",
   "insufficientFactoryStock": "Not enough factory stock. Available: {available}",
   "available": "Available",
   "noStockToDeduct": "No factory stock available to deduct",

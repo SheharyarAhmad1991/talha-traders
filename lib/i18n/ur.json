@@ -180,7 +180,7 @@
   "deductMaterialDesc": "فیکٹری کے اسٹاک سے مال کم کریں (ضائع، نقصان، یا درستگی)۔",
   "quantityToDeduct": "کاٹنے کی مقدار",
   "deductNotesPlaceholder": "وجہ (اختیاری)",
-  "deductSuccess": "فیکٹری سے مال کاٹ دیا گیا",
+  "deductSuccess": "مال کاٹ دیا گیا اور سٹیٹمنٹ میں محفوظ ہو گیا",
   "insufficientFactoryStock": "فیکٹری میں کافی مال نہیں۔ دستیاب: {available}",
   "available": "دستیاب",
   "noStockToDeduct": "کاٹنے کے لیے فیکٹری میں مال نہیں",

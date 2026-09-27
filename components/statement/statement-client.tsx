@@ -41,6 +41,7 @@ type LogRow = {
   amountPaid: number | null;
   mazdooriPaid: number | null;
   sendTo: string | null;
+  notes: string | null;
 };
 
 export function StatementClient() {
@@ -110,6 +111,15 @@ export function StatementClient() {
     }
   }
 
+  function typeLabel(value: string) {
+    if (value === "PURCHASE") return t("purchase");
+    if (value === "ISSUE") return t("issue");
+    if (value === "RECEIVE") return t("receive");
+    if (value === "DEDUCT") return t("deduct");
+    if (value === "ALL") return t("all");
+    return value;
+  }
+
   function getDetails(r: LogRow) {
     if (r.type === "PURCHASE") {
       return [
@@ -125,6 +135,7 @@ export function StatementClient() {
             }`
           : null,
         r.workerName ? `(${localizeText(r.workerName, language)})` : null,
+        r.notes || null,
       ]
         .filter(Boolean)
         .join(" · ");
@@ -133,6 +144,7 @@ export function StatementClient() {
       return [
         localizeText(r.workerName, language),
         localizeText(r.rawMaterialName, language),
+        r.notes || null,
       ]
         .filter(Boolean)
         .join(" · ");
@@ -141,6 +153,7 @@ export function StatementClient() {
       return [
         localizeText(r.rawMaterialName, language),
         t("factory"),
+        r.notes || null,
       ]
         .filter(Boolean)
         .join(" · ");
@@ -151,6 +164,7 @@ export function StatementClient() {
       r.materialConsumed != null && r.materialConsumed > 0
         ? `${t("consumed")} ${r.materialConsumed}`
         : null,
+      r.notes || null,
     ]
       .filter(Boolean)
       .join(" · ");
@@ -160,6 +174,12 @@ export function StatementClient() {
     if (r.type === "PURCHASE") return r.amountPaid ?? "—";
     if (r.type === "RECEIVE") return r.mazdooriPaid ?? "—";
     return "—";
+  }
+
+  function csvEscape(value: string | number) {
+    const s = String(value ?? "");
+    if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+    return s;
   }
 
   function downloadCsv() {
@@ -179,11 +199,12 @@ export function StatementClient() {
       t("amountPaid"),
       t("mazdooriPaid"),
       t("sendTo"),
+      t("notes"),
     ];
     const lines = rows.map((r) =>
       [
         format(new Date(r.date), "yyyy-MM-dd"),
-        r.type,
+        typeLabel(r.type),
         r.dealerName || "",
         r.workerName || "",
         r.rawMaterialName || "",
@@ -197,15 +218,19 @@ export function StatementClient() {
           : r.sendTo === "FACTORY"
             ? t("factory")
             : r.sendTo || "",
-      ].join(",")
+        r.notes || "",
+      ]
+        .map(csvEscape)
+        .join(",")
     );
-    const blob = new Blob([[headers.join(","), ...lines].join("\n")], {
-      type: "text/csv;charset=utf-8;",
-    });
+    const blob = new Blob(
+      [["\uFEFF" + headers.join(","), ...lines].join("\n")],
+      { type: "text/csv;charset=utf-8;" }
+    );
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `talha-traders-statement-${Date.now()}.csv`;
+    a.download = `talha-traders-statement-${type.toLowerCase()}-${Date.now()}.csv`;
     a.click();
     URL.revokeObjectURL(url);
     toast.success(t("csvDownloaded"));
@@ -233,7 +258,7 @@ export function StatementClient() {
         [
           startDate ? `${t("from")}: ${startDate}` : null,
           endDate ? `${t("to")}: ${endDate}` : null,
-          `${t("type")}: ${type}`,
+          `${t("type")}: ${typeLabel(type)}`,
           `${t("generated")}: ${format(new Date(), "dd MMM yyyy HH:mm")}`,
         ]
           .filter(Boolean)
@@ -255,7 +280,7 @@ export function StatementClient() {
         ],
         body: rows.map((r) => [
           format(new Date(r.date), "dd MMM yyyy"),
-          r.type,
+          typeLabel(r.type),
           getDetails(r),
           r.quantity ?? "—",
           String(getPayment(r)),
@@ -267,7 +292,9 @@ export function StatementClient() {
         },
       });
 
-      doc.save(`talha-traders-statement-${Date.now()}.pdf`);
+      doc.save(
+        `talha-traders-statement-${type.toLowerCase()}-${Date.now()}.pdf`
+      );
       toast.success(t("pdfDownloaded"));
     } catch (err) {
       console.error(err);
@@ -365,17 +392,7 @@ export function StatementClient() {
                         {format(new Date(r.date), "dd MMM yyyy")}
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary">
-                          {r.type === "PURCHASE"
-                            ? t("purchase")
-                            : r.type === "ISSUE"
-                              ? t("issue")
-                              : r.type === "RECEIVE"
-                                ? t("receive")
-                                : r.type === "DEDUCT"
-                                  ? t("deduct")
-                                  : r.type}
-                        </Badge>
+                        <Badge variant="secondary">{typeLabel(r.type)}</Badge>
                       </TableCell>
                       <TableCell className="max-w-xs text-sm">
                         {getDetails(r)}

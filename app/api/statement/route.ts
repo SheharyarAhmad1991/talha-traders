@@ -58,6 +58,7 @@ export async function GET(request: Request) {
       amountPaid: true,
       mazdooriPaid: true,
       sendTo: true,
+      notes: true,
     },
   });
 
