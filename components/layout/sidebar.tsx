@@ -11,8 +11,6 @@ import {
   Settings,
   LogOut,
   Menu,
-  ClipboardCheck,
-  Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,7 +25,7 @@ import { toast } from "sonner";
 import { useLanguage, type TranslationKey } from "@/lib/i18n/language-context";
 import { useNavigation } from "@/components/layout/navigation";
 
-const navItems: {
+const mainNavItems: {
   href: string;
   labelKey: TranslationKey;
   icon: typeof LayoutDashboard;
@@ -53,16 +51,13 @@ const navItems: {
     labelKey: "downloadStatement",
     icon: FileDown,
   },
-  {
-    href: "/dashboard/attendance",
-    labelKey: "markAttendance",
-    icon: ClipboardCheck,
-  },
-  {
-    href: "/dashboard/salary",
-    labelKey: "salaryStatement",
-    icon: Wallet,
-  },
+];
+
+const bottomNavItems: {
+  href: string;
+  labelKey: TranslationKey;
+  icon: typeof LayoutDashboard;
+}[] = [
   {
     href: "/dashboard/settings",
     labelKey: "settings",
@@ -70,20 +65,23 @@ const navItems: {
   },
 ];
 
-function NavLinks({
+function NavLink({
+  href,
+  labelKey,
+  icon: Icon,
   onNavigate,
-  onLogout,
 }: {
+  href: string;
+  labelKey: TranslationKey;
+  icon: typeof LayoutDashboard;
   onNavigate?: () => void;
-  onLogout: () => void;
 }) {
   const router = useRouter();
   const { t } = useLanguage();
   const { pathname, pendingHref, isPending, isActive, markPending } =
     useNavigation();
 
-  function handleClick(event: MouseEvent<HTMLAnchorElement>, href: string) {
-    // Instant active highlight; block spam-clicks while a transition is pending
+  function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     if (pendingHref && pendingHref !== href) {
       event.preventDefault();
       return;
@@ -93,50 +91,79 @@ function NavLinks({
       onNavigate?.();
       return;
     }
-    // Prefetch immediately on click (in case hover never happened)
     router.prefetch(href);
     markPending(href);
     onNavigate?.();
   }
 
+  const active = isActive(href);
+  const isThisPending = pendingHref === href;
+
   return (
-    <nav className="flex flex-col gap-1" aria-busy={isPending}>
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        const active = isActive(item.href);
-        const isThisPending = pendingHref === item.href;
-        return (
-          <Link
+    <Link
+      href={href}
+      prefetch={false}
+      onMouseEnter={() => router.prefetch(href)}
+      onFocus={() => router.prefetch(href)}
+      onClick={handleClick}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+        active
+          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+          : "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
+        isPending && !isThisPending && "pointer-events-none opacity-50"
+      )}
+    >
+      <Icon className="size-4 shrink-0" />
+      {t(labelKey)}
+    </Link>
+  );
+}
+
+function NavLinks({
+  onNavigate,
+  onLogout,
+}: {
+  onNavigate?: () => void;
+  onLogout: () => void;
+}) {
+  const { t } = useLanguage();
+  const { isPending } = useNavigation();
+
+  return (
+    <nav className="flex h-full flex-col" aria-busy={isPending}>
+      <div className="flex flex-1 flex-col gap-1">
+        {mainNavItems.map((item) => (
+          <NavLink
             key={item.href}
             href={item.href}
-            // Prefetch only on hover — prefetching every link on mount saturates the DB pool
-            prefetch={false}
-            onMouseEnter={() => router.prefetch(item.href)}
-            onFocus={() => router.prefetch(item.href)}
-            onClick={(e) => handleClick(e, item.href)}
-            aria-current={active ? "page" : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              active
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground",
-              isPending && !isThisPending && "pointer-events-none opacity-50"
-            )}
-          >
-            <Icon className="size-4 shrink-0" />
-            {t(item.labelKey)}
-          </Link>
-        );
-      })}
-      <Button
-        variant="ghost"
-        disabled={isPending}
-        className="w-full justify-start gap-3 px-3 text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
-        onClick={onLogout}
-      >
-        <LogOut className="size-4 shrink-0" />
-        {t("logout")}
-      </Button>
+            labelKey={item.labelKey}
+            icon={item.icon}
+            onNavigate={onNavigate}
+          />
+        ))}
+      </div>
+      <div className="mt-auto flex flex-col gap-1 border-t border-sidebar-border pt-3">
+        {bottomNavItems.map((item) => (
+          <NavLink
+            key={item.href}
+            href={item.href}
+            labelKey={item.labelKey}
+            icon={item.icon}
+            onNavigate={onNavigate}
+          />
+        ))}
+        <Button
+          variant="ghost"
+          disabled={isPending}
+          className="w-full justify-start gap-3 px-3 text-sidebar-foreground/80 hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground"
+          onClick={onLogout}
+        >
+          <LogOut className="size-4 shrink-0" />
+          {t("logout")}
+        </Button>
+      </div>
     </nav>
   );
 }
@@ -158,7 +185,7 @@ export function DesktopSidebar() {
   const { t } = useLanguage();
 
   return (
-    <aside className="hidden h-screen w-64 shrink-0 flex-col overflow-y-auto border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
+    <aside className="hidden h-screen w-64 shrink-0 flex-col overflow-hidden border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:flex">
       <div className="sticky top-0 z-10 flex h-14 shrink-0 items-center border-b border-sidebar-border bg-sidebar px-4">
         <Link
           href="/dashboard"
@@ -168,7 +195,7 @@ export function DesktopSidebar() {
           Talha Traders
         </Link>
       </div>
-      <div className="p-3">
+      <div className="flex min-h-0 flex-1 flex-col p-3">
         <NavLinks onLogout={() => logout(router, t("loggedOut"))} />
       </div>
     </aside>
@@ -196,15 +223,15 @@ export function MobileNav() {
       </SheetTrigger>
       <SheetContent
         side="left"
-        className="w-72 bg-sidebar p-0 text-sidebar-foreground"
+        className="flex w-72 flex-col bg-sidebar p-0 text-sidebar-foreground"
       >
         <SheetTitle className="sr-only">{t("navigation")}</SheetTitle>
-        <div className="flex h-14 items-center border-b border-sidebar-border px-4">
+        <div className="flex h-14 shrink-0 items-center border-b border-sidebar-border px-4">
           <span className="font-heading text-lg font-semibold">
             Talha Traders
           </span>
         </div>
-        <div className="p-3">
+        <div className="flex min-h-0 flex-1 flex-col p-3">
           <NavLinks
             onNavigate={() => setOpen(false)}
             onLogout={() => logout(router, t("loggedOut"))}

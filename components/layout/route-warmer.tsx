@@ -10,8 +10,6 @@ const WARM_ROUTES = [
   "/dashboard/issue",
   "/dashboard/receive",
   "/dashboard/statement",
-  "/dashboard/attendance",
-  "/dashboard/salary",
   "/dashboard/settings",
 ] as const;
 
